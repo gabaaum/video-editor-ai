@@ -1,0 +1,25 @@
+# Uploads e outputs gerados
+video_uploads/
+video_outputs/
+carrossel_output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Arquivos de outros projetos (n8n workflows, etc)
+*.json
+agente_*.json
+larissatype.json
+mufasatype*.json
+
+# Claude
+.claude/
+
+# Opensquad
+_opensquad/
+
+# Streamlit
+.streamlit/

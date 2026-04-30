@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarrosselAI — Gerador de Carrosséis</title>
+  <style>
+    /* ── Variáveis ──────────────────────────────────────────────────────── */
+    :root {
+      --fundo:        #0b0b18;
+      --surface:      #13132a;
+      --surface-2:    #1c1c38;
+      --borda:        rgba(120, 80, 255, 0.22);
+      --acento:       #7850ff;
+      --acento-claro: #a070ff;
+      --acento-glow:  rgba(120, 80, 255, 0.35);
+      --texto:        #f0f0ff;
+      --muted:        #7878a0;
+      --raio:         18px;
+      --raio-sm:      10px;
+      --sombra:       0 8px 40px rgba(0,0,0,0.55);
+      --trans:        all 0.22s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--fundo);
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(120,80,255,.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 90%, rgba(80,40,200,.12) 0%, transparent 55%);
+      color: var(--texto);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Navbar ─────────────────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 2rem;
+      border-bottom: 1px solid var(--borda);
+      background: rgba(11,11,24,.85);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--texto);
+      text-decoration: none;
+      letter-spacing: -.02em;
+    }
+
+    .logo-icone {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--acento), var(--acento-claro));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 0 12px var(--acento-glow);
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      background: rgba(120,80,255,.15);
+      border: 1px solid var(--acento);
+      color: var(--acento-claro);
+      padding: 0.2rem 0.65rem;
+      border-radius: 99px;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    /* ── Layout dois painéis ─────────────────────────────────────────────── */
+    .grade {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 1.5rem;
+      padding: 1.5rem 2rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+      align-items: start;
+    }
+
+    /* ── Painel esquerdo: formulário ─────────────────────────────────────── */
+    .painel-form {
+      background: var(--surface);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      padding: 1.75rem;
+      position: sticky;
+      top: 72px;
+      box-shadow: var(--sombra);
+    }
+
+    .form-titulo {
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 0.35rem;
+      background: linear-gradient(135deg, #fff 0%, var(--acento-claro) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .form-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.6rem;
+      line-height: 1.55;
+    }
+
+    .campo { margin-bottom: 1.2rem; }
+
+    .campo label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      margin-bottom: 0.5rem;
+    }
+
+    .campo label .destaque-num {
+      color: var(--acento-claro);
+      font-size: 1rem;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 800;
+    }
+
+    textarea#tema {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio-sm);
+      color: var(--texto);
+      font-size: 0.92rem;
+      font-family: inherit;
+      padding: 0.85rem 1rem;
+      resize: vertical;
+      min-height: 115px;
+      transition: var(--trans);
+      outline: none;
+      line-height: 1.55;
+    }
+
+    textarea#tema::placeholder { color: var(--muted); }
+
+    textarea#tema:focus {
+      border-color: var(--acento);
+      box-shadow: 0 0 0 3px var(--acento-glow);
+    }
+
+    /* Pills de seleção */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .pill {
+      padding: 0.38rem 0.8rem;
+      border-radius: 99px;
+      border: 1px solid var(--borda);
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--trans);
+      user-select: none;
+      font-family: inherit;
+    }
+
+    .pill:hover { border-color: var(--acento); color: var(--acento-claro); }
+
+    .pill.ativo {
+      background: var(--acento);
+      border-color: var(--acento);
+      color: #fff;
+      box-shadow: 0 0 14px var(--acento-glow);
+    }
+
+    /* Botão criar */
+    .btn-criar {
+      width: 100%;
+      padding: 0.88rem;
+      border-radius: var(--raio-sm);
+      border: none;
+      background: linear-gradient(135deg, var(--acento) 0%, var(--acento-claro) 100%);
+      color: #fff;
+      font-size: 0.98rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--trans);
+      margin-top: 0.25rem;
+      box-shadow: 0 4px 22px var(--acento-glow);
+      letter-spacing: -.01em;
+    }
+
+    .btn-criar:hover:not(:disabled) {
+      box-shadow: 0 6px 28px var(--acento-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-criar:active:not(:disabled) { transform: scale(0.985); }
+
+    .btn-criar:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .dica {
+      margin-top: 1.1rem;
+      padding: 0.7rem 0.9rem;
+      background: rgba(120,80,255,.07);
+      border: 1px solid rgba(120,80,255,.18);
+      border-radius: var(--raio-sm);
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ── Painel direito: prévia ──────────────────────────────────────────── */
+    .painel-preview {
+      background: var(--surface);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      padding: 1.75rem;
+      min-height: 620px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--sombra);
+    }
+
+    /* Estado vazio */
+    #estado-vazio {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .placeholder-icone {
+      width: 86px; height: 86px;
+      border-radius: 20px;
+      background: var(--surface-2);
+      border: 2px dashed var(--borda);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem;
+    }
+
+    #estado-vazio h2 { font-size: 1.25rem; font-weight: 800; }
+
+    #estado-vazio p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      max-width: 280px;
+      line-height: 1.6;
+    }
+
+    /* Estado carregando */
+    #estado-carregando {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .anel-spin {
+      width: 58px; height: 58px;
+      border: 3px solid var(--surface-2);
+      border-top-color: var(--acento);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .txt-carregando { font-size: 0.95rem; color: var(--muted); }
+
+    .progresso-wrap {
+      width: 220px; height: 4px;
+      background: var(--surface-2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progresso-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--acento), var(--acento-claro));
+      border-radius: 99px;
+      width: 0%;
+      transition: width .35s ease;
+    }
+
+    /* Estado resultado */
+    #estado-resultado {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      animation: surgir .35s ease;
+    }
+
+    @keyframes surgir {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    .resultado-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .resultado-tema {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .resultado-tema strong { color: var(--texto); }
+
+    .resultado-total {
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface-2);
+      padding: .2rem .65rem;
+      border-radius: 99px;
+      border: 1px solid var(--borda);
+    }
+
+    /* Visualizador principal */
+    .visualizador {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .btn-nav {
+      flex-shrink: 0;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--borda);
+      background: var(--surface-2);
+      color: var(--texto);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--trans);
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      border-color: var(--acento);
+      background: var(--acento);
+      box-shadow: 0 0 14px var(--acento-glow);
+    }
+
+    .btn-nav:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    .slide-moldura {
+      flex: 1;
+      position: relative;
+      border-radius: var(--raio-sm);
+      overflow: hidden;
+    }
+
+    .slide-moldura img {
+      width: 100%;
+      display: block;
+      border-radius: var(--raio-sm);
+      box-shadow: 0 10px 50px rgba(0,0,0,.7);
+      transition: opacity .18s ease;
+    }
+
+    .slide-moldura img.trocando { opacity: 0; }
+
+    .slide-contador {
+      position: absolute;
+      bottom: 12px; right: 12px;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: .28rem .7rem;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    /* Miniaturas */
+    .miniaturas {
+      display: flex;
+      gap: 0.55rem;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--acento) transparent;
+    }
+
+    .miniatura {
+      flex-shrink: 0;
+      width: 66px; height: 66px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--trans);
+      opacity: 0.55;
+    }
+
+    .miniatura:hover { opacity: 0.82; }
+
+    .miniatura.ativa {
+      border-color: var(--acento);
+      opacity: 1;
+      box-shadow: 0 0 0 3px var(--acento-glow);
+    }
+
+    /* Título do slide ativo */
+    .titulo-slide-ativo {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .titulo-slide-ativo strong { color: var(--acento-claro); }
+
+    /* Ações */
+    .acoes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+    }
+
+    .btn-acao {
+      padding: 0.72rem 1rem;
+      border-radius: var(--raio-sm);
+      border: 1px solid var(--borda);
+      background: var(--surface-2);
+      color: var(--texto);
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--trans);
+      text-align: center;
+    }
+
+    .btn-acao:hover {
+      border-color: var(--acento);
+      color: var(--acento-claro);
+      background: rgba(120,80,255,.1);
+    }
+
+    .btn-acao.destaque {
+      background: linear-gradient(135deg, var(--acento) 0%, var(--acento-claro) 100%);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 18px var(--acento-glow);
+    }
+
+    .btn-acao.destaque:hover {
+      opacity: 0.9;
+      color: #fff;
+      background: linear-gradient(135deg, var(--acento) 0%, var(--acento-claro) 100%);
+    }
+
+    .btn-acao:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-novo {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: var(--raio-sm);
+      border: 1px dashed var(--borda);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--trans);
+    }
+
+    .btn-novo:hover {
+      border-color: var(--acento);
+      color: var(--acento-claro);
+    }
+
+    /* Atalhos de teclado */
+    .atalhos {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .atalhos kbd {
+      background: var(--surface-2);
+      border: 1px solid var(--borda);
+      border-radius: 4px;
+      padding: .1rem .4rem;
+      font-family: inherit;
+      font-size: 0.72rem;
+    }
+
+    /* Utilitários */
+    [hidden] { display: none !important; }
+
+    /* ── Responsivo ──────────────────────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .grade {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
+      .painel-form { position: static; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: .7rem 1rem; }
+      .painel-form, .painel-preview { padding: 1.25rem; }
+      .acoes { grid-template-columns: 1fr; }
+      .form-titulo { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <a class="logo" href="/">
+    <div class="logo-icone">🎨</div>
+    CarrosselAI
+  </a>
+  <span class="badge">BETA</span>
+</nav>
+
+<!-- ── Grade principal ─────────────────────────────────────────────────────── -->
+<div class="grade">
+
+  <!-- Painel esquerdo: formulário -->
+  <aside class="painel-form">
+    <h1 class="form-titulo">Crie seu<br>Carrossel</h1>
+    <p class="form-sub">Slides prontos para Instagram e LinkedIn em segundos, sem design.</p>
+
+    <div class="campo">
+      <label for="tema">Tema do carrossel</label>
+      <textarea
+        id="tema"
+        placeholder='Ex: "5 hábitos que vão mudar sua produtividade com IA"'
+      ></textarea>
+    </div>
+
+    <div class="campo">
+      <label>
+        Quantidade de slides —
+        <span class="destaque-num" id="num-label">5</span>
+      </label>
+      <div class="pills" id="pills"></div>
+    </div>
+
+    <button class="btn-criar" id="btn-criar" disabled>
+      ✨ Criar Carrossel
+    </button>
+
+    <p class="dica">
+      💡 <strong>Dica:</strong> Seja específico. "5 erros de iniciantes em tráfego pago" gera
+      resultado melhor do que só "tráfego pago".
+    </p>
+  </aside>
+
+  <!-- Painel direito: prévia -->
+  <main class="painel-preview">
+
+    <!-- Estado 1: vazio -->
+    <div id="estado-vazio">
+      <div class="placeholder-icone">🖼️</div>
+      <h2>Seu carrossel aparece aqui</h2>
+      <p>Preencha o tema ao lado e clique em <strong>Criar Carrossel</strong> para começar.</p>
+    </div>
+
+    <!-- Estado 2: carregando -->
+    <div id="estado-carregando" hidden>
+      <div class="anel-spin"></div>
+      <p class="txt-carregando" id="txt-carregando">Criando seus slides…</p>
+      <div class="progresso-wrap">
+        <div class="progresso-fill" id="progresso-fill"></div>
+      </div>
+    </div>
+
+    <!-- Estado 3: resultado -->
+    <div id="estado-resultado" hidden>
+
+      <div class="resultado-header">
+        <p class="resultado-tema">Tema: <strong id="tema-exibido"></strong></p>
+        <span class="resultado-total" id="resultado-total">0 slides</span>
+      </div>
+
+      <div class="visualizador">
+        <button class="btn-nav" id="btn-anterior" title="Anterior  (← )" disabled>&#8249;</button>
+        <div class="slide-moldura">
+          <img id="slide-img" src="" alt="Slide atual" />
+          <div class="slide-contador" id="slide-contador">1 / 5</div>
+        </div>
+        <button class="btn-nav" id="btn-proximo" title="Próximo  (→ )">&#8250;</button>
+      </div>
+
+      <p class="titulo-slide-ativo" id="titulo-slide-ativo">
+        Slide 1 — <strong></strong>
+      </p>
+
+      <div class="miniaturas" id="miniaturas"></div>
+
+      <div class="acoes">
+        <button class="btn-acao" id="btn-baixar-slide">⬇ Baixar este slide</button>
+        <button class="btn-acao destaque" id="btn-baixar-todos">📦 Baixar todos (.zip)</button>
+      </div>
+
+      <div class="atalhos">
+        <span><kbd>←</kbd> slide anterior</span>
+        <span><kbd>→</kbd> próximo slide</span>
+      </div>
+
+      <button class="btn-novo" id="btn-novo">+ Criar novo carrossel</button>
+
+    </div><!-- /estado-resultado -->
+
+  </main>
+</div><!-- /grade -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+  // ── Estado ──────────────────────────────────────────────────────────────────
+  let slides = [];
+  let indice = 0;
+  let numSlides = 5;
+
+  // ── Elementos ────────────────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const elTema         = $('tema');
+  const elNumLabel     = $('num-label');
+  const elBtnCriar     = $('btn-criar');
+  const elPills        = $('pills');
+  const elVazio        = $('estado-vazio');
+  const elCarregando   = $('estado-carregando');
+  const elResultado    = $('estado-resultado');
+  const elProgresso    = $('progresso-fill');
+  const elTxtLoad      = $('txt-carregando');
+  const elSlideImg     = $('slide-img');
+  const elContador     = $('slide-contador');
+  const elMiniaturas   = $('miniaturas');
+  const elTemaExibido  = $('tema-exibido');
+  const elTotal        = $('resultado-total');
+  const elTituloAtivo  = $('titulo-slide-ativo');
+  const elBtnAnt       = $('btn-anterior');
+  const elBtnProx      = $('btn-proximo');
+  const elBtnBaixarSlide = $('btn-baixar-slide');
+  const elBtnBaixarZip   = $('btn-baixar-todos');
+  const elBtnNovo        = $('btn-novo');
+
+  // ── Pills de seleção de slides ───────────────────────────────────────────────
+  for (let n = 3; n <= 12; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'pill' + (n === 5 ? ' ativo' : '');
+    btn.textContent = n;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('ativo'));
+      btn.classList.add('ativo');
+      numSlides = n;
+      elNumLabel.textContent = n;
+    });
+    elPills.appendChild(btn);
+  }
+
+  // ── Habilita botão conforme preenchimento ────────────────────────────────────
+  elTema.addEventListener('input', () => {
+    elBtnCriar.disabled = !elTema.value.trim();
+  });
+
+  // ── Troca de estado visual ───────────────────────────────────────────────────
+  function estado(qual) {
+    elVazio.hidden      = qual !== 'vazio';
+    elCarregando.hidden = qual !== 'carregando';
+    elResultado.hidden  = qual !== 'resultado';
+  }
+
+  // ── Barra de progresso simulada ──────────────────────────────────────────────
+  let timer = null;
+  const passos = [
+    'Preparando estrutura dos slides…',
+    'Gerando conteúdo textual…',
+    'Criando imagens…',
+    'Finalizando…',
+  ];
+  let passoIdx = 0;
+
+  function iniciarProgresso() {
+    elProgresso.style.width = '0%';
+    elProgresso.style.transition = 'none';
+    passoIdx = 0;
+    elTxtLoad.textContent = passos[0];
+    let p = 0;
+    timer = setInterval(() => {
+      const passo = p < 30 ? 5 : p < 60 ? 3 : p < 85 ? 1 : 0.3;
+      p = Math.min(p + passo, 93);
+      elProgresso.style.transition = 'width .35s ease';
+      elProgresso.style.width = p + '%';
+      const idx = p < 25 ? 0 : p < 55 ? 1 : p < 80 ? 2 : 3;
+      if (idx !== passoIdx) { passoIdx = idx; elTxtLoad.textContent = passos[idx]; }
+    }, 220);
+  }
+
+  function finalizarProgresso() {
+    clearInterval(timer);
+    elProgresso.style.width = '100%';
+  }
+
+  // ── Vai para slide pelo índice ───────────────────────────────────────────────
+  function irPara(idx) {
+    if (idx < 0 || idx >= slides.length) return;
+    indice = idx;
+
+    // Troca de imagem com fade
+    elSlideImg.classList.add('trocando');
+    setTimeout(() => {
+      elSlideImg.src = slides[idx].imagem;
+      elSlideImg.classList.remove('trocando');
+    }, 160);
+
+    elContador.textContent = `${idx + 1} / ${slides.length}`;
+    elTituloAtivo.innerHTML = `Slide ${idx + 1} — <strong>${slides[idx].titulo}</strong>`;
+
+    // Miniaturas
+    document.querySelectorAll('.miniatura').forEach((m, i) => {
+      m.classList.toggle('ativa', i === idx);
+    });
+    document.querySelectorAll('.miniatura')[idx]
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+    // Botões nav
+    elBtnAnt.disabled  = idx === 0;
+    elBtnProx.disabled = idx === slides.length - 1;
+  }
+
+  // ── Renderiza miniaturas ─────────────────────────────────────────────────────
+  function renderizarMiniaturas() {
+    elMiniaturas.innerHTML = '';
+    slides.forEach((slide, i) => {
+      const img = document.createElement('img');
+      img.className = 'miniatura' + (i === 0 ? ' ativa' : '');
+      img.src = slide.imagem;
+      img.alt = `Slide ${i + 1}`;
+      img.title = slide.titulo;
+      img.addEventListener('click', () => irPara(i));
+      elMiniaturas.appendChild(img);
+    });
+  }
+
+  // ── Geração ──────────────────────────────────────────────────────────────────
+  elBtnCriar.addEventListener('click', async () => {
+    const tema = elTema.value.trim();
+    if (!tema) return;
+
+    elBtnCriar.disabled = true;
+    estado('carregando');
+    iniciarProgresso();
+
+    try {
+      const resp = await fetch('/gerar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tema, num_slides: numSlides }),
+      });
+
+      const dados = await resp.json();
+      finalizarProgresso();
+
+      if (!resp.ok || dados.erro) {
+        alert('Erro: ' + (dados.erro || 'Falha ao gerar o carrossel.'));
+        estado('vazio');
+        return;
+      }
+
+      slides = dados.slides;
+      indice  = 0;
+
+      elTemaExibido.textContent = tema;
+      elTotal.textContent = `${slides.length} slide${slides.length > 1 ? 's' : ''}`;
+      renderizarMiniaturas();
+
+      setTimeout(() => {
+        estado('resultado');
+        irPara(0);
+      }, 320);
+
+    } catch {
+      finalizarProgresso();
+      alert('Erro de conexão. Verifique se o servidor está rodando.');
+      estado('vazio');
+    } finally {
+      elBtnCriar.disabled = !elTema.value.trim();
+    }
+  });
+
+  // ── Navegação ────────────────────────────────────────────────────────────────
+  elBtnAnt.addEventListener('click',  () => irPara(indice - 1));
+  elBtnProx.addEventListener('click', () => irPara(indice + 1));
+
+  document.addEventListener('keydown', e => {
+    if (elResultado.hidden) return;
+    if (e.key === 'ArrowLeft')  irPara(indice - 1);
+    if (e.key === 'ArrowRight') irPara(indice + 1);
+  });
+
+  // ── Download: slide individual ───────────────────────────────────────────────
+  elBtnBaixarSlide.addEventListener('click', () => {
+    const s = slides[indice];
+    const a = document.createElement('a');
+    a.href = s.imagem;
+    a.download = s.arquivo;
+    a.click();
+  });
+
+  // ── Download: ZIP com todos os slides ────────────────────────────────────────
+  elBtnBaixarZip.addEventListener('click', async () => {
+    elBtnBaixarZip.textContent = '⏳ Gerando ZIP…';
+    elBtnBaixarZip.disabled = true;
+
+    const zip = new JSZip();
+    slides.forEach(s => {
+      zip.file(s.arquivo, s.imagem.split(',')[1], { base64: true });
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'carrossel_' + elTemaExibido.textContent
+      .toLowerCase().replace(/\s+/g, '_').slice(0, 40) + '.zip';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    elBtnBaixarZip.textContent = '📦 Baixar todos (.zip)';
+    elBtnBaixarZip.disabled = false;
+  });
+
+  // ── Criar novo ───────────────────────────────────────────────────────────────
+  elBtnNovo.addEventListener('click', () => {
+    slides = [];
+    indice  = 0;
+    elTema.value = '';
+    elBtnCriar.disabled = true;
+    estado('vazio');
+    elTema.focus();
+  });
+</script>
+</body>
+</html>
