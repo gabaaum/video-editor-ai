@@ -207,11 +207,12 @@
     .painel-dir {
       grid-column: 2; grid-row: 1 / 3;
       display: flex; flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
       background: var(--s1);
       border-left: 1px solid var(--borda);
       min-height: 0;
       transition: all .22s cubic-bezier(.4,0,.2,1);
+      scrollbar-width: thin; scrollbar-color: var(--acento) transparent;
     }
     .painel-dir.fullscreen {
       position: fixed;
@@ -259,17 +260,11 @@
       background: var(--s3); padding: .18rem .4rem; border-radius: 4px; color: var(--texto);
     }
 
-    /* ── Área central rolável (transcrição + silêncios + repetições) ── */
-    .painel-scroll {
-      flex: 1; overflow-y: auto; min-height: 0;
-      scrollbar-width: thin; scrollbar-color: var(--acento) transparent;
-      display: flex; flex-direction: column;
-    }
+    /* ── Área central (painel-dir rola; este wrapper só agrupa) ── */
+    .painel-scroll { display: block; }
 
     /* ── Transcrição ── */
-    .transcricao-scroll {
-      flex: 1; min-height: 0;
-    }
+    .transcricao-scroll { display: block; }
 
     .seg-item {
       padding: .6rem .85rem; border-bottom: 1px solid rgba(120,80,255,.1);
@@ -403,7 +398,9 @@
     /* ── Ações ── */
     .acoes-finais {
       padding: .85rem 1rem; border-top: 1px solid var(--borda);
-      display: flex; flex-direction: column; gap: .5rem; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: .5rem;
+      position: sticky; bottom: 0; z-index: 10;
+      background: var(--s1);
     }
     .btn-render {
       width: 100%; padding: .78rem; border: none; border-radius: var(--r-sm);
