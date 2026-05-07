@@ -121,7 +121,7 @@
     /* ── TELA EDITOR ── */
     #tela-editor {
       display: grid;
-      grid-template-columns: 1fr 320px;
+      grid-template-columns: 1fr 420px;
       grid-template-rows: 1fr auto;
       /* ocupa exatamente o espaço restante abaixo da navbar */
       height: calc(100vh - 50px);
@@ -211,7 +211,29 @@
       background: var(--s1);
       border-left: 1px solid var(--borda);
       min-height: 0;
+      transition: all .22s cubic-bezier(.4,0,.2,1);
     }
+    .painel-dir.fullscreen {
+      position: fixed;
+      inset: 50px 0 0 0;
+      z-index: 200;
+      width: 100%;
+      border-left: none;
+      box-shadow: none;
+    }
+    .painel-topo {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: .35rem .6rem;
+      border-bottom: 1px solid var(--borda);
+      flex-shrink: 0;
+    }
+    .btn-fs {
+      background: none; border: 1px solid var(--borda); color: var(--muted);
+      border-radius: 6px; padding: .22rem .5rem; font-size: .75rem;
+      cursor: pointer; transition: var(--tr); font-family: inherit;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .btn-fs:hover { border-color: var(--acento-c); color: var(--acento-c); }
 
     /* Seção genérica */
     .secao { padding: .85rem 1rem; border-bottom: 1px solid var(--borda); flex-shrink: 0; }
@@ -237,10 +259,16 @@
       background: var(--s3); padding: .18rem .4rem; border-radius: 4px; color: var(--texto);
     }
 
-    /* ── Transcrição ── */
-    .transcricao-scroll {
+    /* ── Área central rolável (transcrição + silêncios + repetições) ── */
+    .painel-scroll {
       flex: 1; overflow-y: auto; min-height: 0;
       scrollbar-width: thin; scrollbar-color: var(--acento) transparent;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Transcrição ── */
+    .transcricao-scroll {
+      flex: 1; min-height: 0;
     }
 
     .seg-item {
@@ -274,6 +302,14 @@
       position: absolute; top: -8px; right: -6px;
       font-size: .58rem; background: var(--acento); color: #fff;
       border-radius: 3px; padding: .05rem .22rem; pointer-events: none;
+    }
+    .chip.ativo {
+      background: rgba(120,80,255,.28); border-color: var(--acento-c);
+      color: #fff; transform: scale(1.05);
+    }
+    .chip.enfase.ativo {
+      background: rgba(255,150,0,.3); border-color: var(--amarelo);
+      color: var(--amarelo);
     }
     .chip.enfase {
       background: rgba(255,150,0,.14); border-color: var(--laranja);
@@ -315,7 +351,7 @@
     .btn-cancelar:hover{ color: var(--texto); }
 
     /* ── Silêncios ── */
-    .sil-lista { display: flex; flex-direction: column; gap: .4rem; }
+    .sil-lista { display: flex; flex-direction: column; gap: .4rem; max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--acento) transparent; }
     .sil-item {
       display: flex; align-items: center; gap: .55rem;
       padding: .42rem .65rem; border-radius: var(--r-sm);
@@ -333,6 +369,24 @@
     .sil-info { flex: 1; min-width: 0; }
     .sil-int  { font-size: .78rem; font-weight: 600; font-variant-numeric: tabular-nums; }
     .sil-dur  { font-size: .68rem; color: var(--muted); }
+
+    /* ── Repetições ── */
+    .rep-lista { display: flex; flex-direction: column; gap: .4rem; max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--amarelo) transparent; }
+    .rep-item {
+      display: flex; align-items: flex-start; gap: .55rem;
+      padding: .42rem .65rem; border-radius: var(--r-sm);
+      border: 1px solid rgba(250,204,21,.25); background: rgba(250,204,21,.05);
+      cursor: pointer; transition: var(--tr); user-select: none;
+    }
+    .rep-item:hover { border-color: var(--amarelo); }
+    .rep-tog { width: 17px; height: 17px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+      display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 900; }
+    .rep-tog.cortar { background: var(--verm-bg); color: var(--verm); border: 1px solid var(--verm); }
+    .rep-tog.manter { background: var(--verde-bg); color: var(--verde); border: 1px solid var(--verde); }
+    .rep-info { flex: 1; min-width: 0; }
+    .rep-texto { font-size: .73rem; color: var(--texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rep-meta  { font-size: .67rem; color: var(--muted); margin-top: .1rem; }
+    .rep-sim   { font-size: .64rem; font-weight: 700; color: var(--amarelo); margin-left: .3rem; }
 
     /* ── Ações ── */
     .acoes-finais {
@@ -368,7 +422,7 @@
       #tela-editor { grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
       .col-video { grid-column: 1; grid-row: 1; border-right: none; }
       .timeline-wrap { grid-column: 1; grid-row: 2; border-right: none; }
-      .painel-dir { grid-column: 1; grid-row: 3; max-height: 500px; }
+      .painel-dir { grid-column: 1; grid-row: 3; max-height: 600px; }
     }
   </style>
 </head>
@@ -443,7 +497,13 @@
   </div>
 
   <!-- PAINEL DIREITO -->
-  <aside class="painel-dir">
+  <aside class="painel-dir" id="painel-dir">
+
+    <div class="painel-topo">
+      <button class="btn-fs" id="btn-fs" onclick="toggleFullscreenPainel()" title="Tela cheia">
+        <span id="fs-icon">⤢</span> <span id="fs-label">Expandir</span>
+      </button>
+    </div>
 
     <!-- 1. Estilo de legenda -->
     <div class="secao">
@@ -465,18 +525,36 @@
       <p class="sec-dica">💡 Clique nas palavras para marcar <strong style="color:var(--laranja)">ênfase</strong>. Use ✏ para corrigir transcrição.</p>
     </div>
 
-    <!-- 2. Transcrição editável -->
-    <div class="transcricao-scroll" id="transcricao-scroll">
-      <!-- preenchido dinamicamente -->
-    </div>
+    <!-- 2-5. Área rolável central -->
+    <div class="painel-scroll">
 
-    <!-- 3. Silêncios -->
-    <div class="secao">
-      <p class="sec-titulo">Silêncios detectados</p>
-      <div class="sil-lista" id="sil-lista"></div>
-    </div>
+      <!-- 2. Transcrição editável -->
+      <div class="transcricao-scroll" id="transcricao-scroll">
+        <!-- preenchido dinamicamente -->
+      </div>
 
-    <!-- 4. Ações -->
+      <!-- 3. Silêncios -->
+      <div class="secao">
+        <p class="sec-titulo">Silêncios detectados</p>
+        <div class="sil-lista" id="sil-lista"></div>
+      </div>
+
+      <!-- 4. Falsas partidas -->
+      <div class="secao" id="secao-fp" hidden>
+        <p class="sec-titulo">✂ Gaguejos / Falsas partidas <span id="fp-badge" style="color:var(--verm);font-size:.75rem"></span></p>
+        <p class="sec-dica" style="margin-bottom:.5rem">A pessoa começa, trava e repete — o primeiro trecho será cortado.</p>
+        <div class="rep-lista" id="fp-lista"></div>
+      </div>
+
+      <!-- 5. Repetições -->
+      <div class="secao" id="secao-rep" hidden>
+        <p class="sec-titulo">Frases repetidas <span id="rep-badge" style="color:var(--amarelo);font-size:.75rem"></span></p>
+        <div class="rep-lista" id="rep-lista"></div>
+      </div>
+
+    </div><!-- /painel-scroll -->
+
+    <!-- 6. Ações -->
     <div class="acoes-finais">
       <button class="btn-render" id="btn-render">🎬 Renderizar vídeo</button>
       <button class="btn-dl" id="btn-dl" hidden>⬇ Baixar vídeo editado</button>
@@ -491,6 +569,8 @@
 let JOB_ID    = null;
 let SEGS      = [];   // segmentos com palavras[]{texto,inicio,fim,enfase}
 let SIL       = [];
+let REP       = [];   // repetições (similaridade entre segmentos distantes)
+let FP        = [];   // falsas partidas (repeat consecutivo)
 let DURACAO   = 0;
 let FPS       = 30;
 let ESTILO    = 'chunk4';
@@ -541,9 +621,11 @@ function aguardar() {
     if (d.status === 'ok') {
       clearInterval(t);
       SEGS    = normalizarSegs(d.segmentos || []); invalidarCache();
-      SIL     = d.silencio || [];
-      DURACAO = d.duracao  || 0;
-      FPS     = d.fps      || 30;
+      SIL     = d.silencio        || [];
+      REP     = d.repeticoes      || [];
+      FP      = d.falsas_partidas || [];
+      DURACAO = d.duracao    || 0;
+      FPS     = d.fps        || 30;
       carregarEditor();
     } else if (d.status === 'erro') {
       clearInterval(t); alert('Erro: ' + d.erro); tela('tela-upload');
@@ -573,6 +655,8 @@ function carregarEditor() {
   vid.src = `/video/${JOB_ID}`; vid.load();
   renderizarTranscricao();
   renderizarSilencio();
+  renderizarFalsasPartidas();
+  renderizarRepeticoes();
   vid.addEventListener('loadedmetadata', () => {
     $('t-total').textContent = fmt(vid.duration);
     redimCanvas(); desenharTL();
@@ -584,19 +668,46 @@ function carregarEditor() {
     realcarSeg();
   });
 
-  // rAF: legenda e tempo em 60fps para sync preciso palavra a palavra
+  // rAF: legenda, destaque de chip e tempo em 60fps
   let rafId = null;
   let ultimoT = -1;
+  let chipAtivo = null;
   function loopLegenda() {
     const t = vid.currentTime;
     if (t !== ultimoT) {
       ultimoT = t;
       atualizarTempo();
       atualizarLegenda();
+      // Destaque de chip na transcrição
+      const todas = palavrasFlat();
+      let novoChip = null;
+      for (let i = 0; i < todas.length; i++) {
+        const p = todas[i];
+        if (t >= p.inicio && t < p.fim) {
+          // Encontra o chip no DOM pelo data-seg/data-pal
+          novoChip = document.querySelector(`.chip[data-seg="${p._seg}"][data-pal="${p._pal}"]`);
+          break;
+        }
+      }
+      if (novoChip !== chipAtivo) {
+        if (chipAtivo) chipAtivo.classList.remove('ativo');
+        if (novoChip) novoChip.classList.add('ativo');
+        chipAtivo = novoChip;
+      }
     }
     rafId = requestAnimationFrame(loopLegenda);
   }
   loopLegenda();
+}
+
+// ── Tela cheia do painel ─────────────────────────────────────────────────────
+function toggleFullscreenPainel() {
+  const painel = $('painel-dir');
+  const icon   = $('fs-icon');
+  const label  = $('fs-label');
+  const on = painel.classList.toggle('fullscreen');
+  icon.textContent  = on ? '⤡' : '⤢';
+  label.textContent = on ? 'Recolher' : 'Expandir';
 }
 
 // ── Seletor de estilo ─────────────────────────────────────────────────────────
@@ -643,7 +754,7 @@ function criarItemSeg(seg, idx) {
   const ta     = el.querySelector('.seg-ta');
   const chips  = el.querySelector('.chips-wrap');
 
-  renderizarChips(seg, chips);
+  renderizarChips(seg, chips, idx);
 
   // Clica no tempo → salta para o momento
   el.querySelector('.seg-tempo').addEventListener('click', () => { vid.currentTime = seg.inicio; });
@@ -656,7 +767,7 @@ function criarItemSeg(seg, idx) {
   // Salvar edição
   el.querySelector('.btn-salvar').addEventListener('click', () => {
     const novo = ta.value.trim();
-    if (novo) { editarSeg(idx, novo); renderizarChips(SEGS[idx], chips); }
+    if (novo) { editarSeg(idx, novo); renderizarChips(SEGS[idx], chips, idx); }
     view.hidden = false; edit.hidden = true;
   });
 
@@ -666,15 +777,16 @@ function criarItemSeg(seg, idx) {
   return el;
 }
 
-function renderizarChips(seg, container) {
+function renderizarChips(seg, container, segIdx) {
   container.innerHTML = '';
-  (seg.palavras || []).forEach(p => container.appendChild(criarChip(p, container)));
+  (seg.palavras || []).forEach((p, pi) => container.appendChild(criarChip(p, container, segIdx, pi)));
 }
 
-function criarChip(p, container) {
+function criarChip(p, container, segIdx, palIdx) {
   const chip = document.createElement('span');
   chip.className = 'chip' + (p.enfase ? ' enfase' : '');
   chip.textContent = p.texto;
+  if (segIdx !== undefined) { chip.dataset.seg = segIdx; chip.dataset.pal = palIdx; }
   chip.title = 'Clique para editar · Duplo clique para ênfase';
 
   let timer = null;
@@ -761,6 +873,58 @@ function realcarSeg() {
   });
 }
 
+// ── Falsas partidas ────────────────────────────────────────────────────────────
+function renderizarFalsasPartidas() {
+  const secao = $('secao-fp');
+  const lista  = $('fp-lista');
+  const badge  = $('fp-badge');
+  lista.innerHTML = '';
+  if (!FP.length) { secao.hidden = true; return; }
+  secao.hidden = false;
+  const nCortar = FP.filter(f => f.cortar).length;
+  badge.textContent = `— ${FP.length} encontrada${FP.length > 1 ? 's' : ''} · ${nCortar} para cortar`;
+  FP.forEach((fp, i) => {
+    const dur = (fp.end - fp.start).toFixed(1);
+    const el = document.createElement('div');
+    el.className = 'rep-item';
+    el.style.borderColor = fp.cortar ? 'rgba(239,68,68,.4)' : 'rgba(34,197,94,.3)';
+    el.innerHTML = `
+      <div class="rep-tog ${fp.cortar ? 'cortar' : 'manter'}">${fp.cortar ? '✕' : '✓'}</div>
+      <div class="rep-info">
+        <p class="rep-texto" title="${fp.texto}">"${fp.texto}"</p>
+        <p class="rep-meta">${fmt(fp.start, 1)} → ${fmt(fp.end, 1)} · ${dur}s ${fp.cortar ? 'será cortado' : 'será mantido'}</p>
+      </div>`;
+    el.addEventListener('click', () => { FP[i].cortar = !FP[i].cortar; renderizarFalsasPartidas(); });
+    lista.appendChild(el);
+  });
+}
+
+// ── Repetições ────────────────────────────────────────────────────────────────
+function renderizarRepeticoes() {
+  const secao = $('secao-rep');
+  const lista = $('rep-lista');
+  const badge = $('rep-badge');
+  lista.innerHTML = '';
+  if (!REP.length) { secao.hidden = true; return; }
+  secao.hidden = false;
+  const nCortar = REP.filter(r => r.cortar).length;
+  badge.textContent = `— ${REP.length} encontrada${REP.length > 1 ? 's' : ''} · ${nCortar} para cortar`;
+  REP.forEach((rep, i) => {
+    const el = document.createElement('div');
+    el.className = 'rep-item';
+    el.dataset.idx = i;
+    const sim = Math.round(rep.similaridade * 100);
+    el.innerHTML = `
+      <div class="rep-tog ${rep.cortar ? 'cortar' : 'manter'}" id="rt-${i}">${rep.cortar ? '✕' : '✓'}</div>
+      <div class="rep-info">
+        <p class="rep-texto" title="${rep.texto}">"${rep.texto}"</p>
+        <p class="rep-meta">${fmt(rep.start, 0)} → ${fmt(rep.end, 0)} · ${rep.cortar ? 'será cortado' : 'será mantido'}<span class="rep-sim">${sim}% similar</span></p>
+      </div>`;
+    el.addEventListener('click', () => { REP[i].cortar = !REP[i].cortar; renderizarRepeticoes(); });
+    lista.appendChild(el);
+  });
+}
+
 // ── Silêncios ─────────────────────────────────────────────────────────────────
 function renderizarSilencio() {
   const lista = $('sil-lista');
@@ -787,7 +951,11 @@ function toggleSil(i) { SIL[i].cortar = !SIL[i].cortar; renderizarSilencio(); de
 // Cache flat de palavras para não recriar array a cada frame
 let _palavrasCache = null;
 function palavrasFlat() {
-  if (!_palavrasCache) _palavrasCache = SEGS.flatMap(s => s.palavras || []);
+  if (!_palavrasCache) {
+    _palavrasCache = SEGS.flatMap((s, si) =>
+      (s.palavras || []).map((p, pi) => ({ ...p, _seg: si, _pal: pi }))
+    );
+  }
   return _palavrasCache;
 }
 // Invalida cache quando segmentos mudam
@@ -967,7 +1135,7 @@ $('btn-render').addEventListener('click', async () => {
   await fetch(`/renderizar/${JOB_ID}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ silencio: SIL, segmentos: SEGS, chunk_size: CHUNK }),
+    body: JSON.stringify({ silencio: SIL, segmentos: SEGS, chunk_size: CHUNK, repeticoes: REP, falsas_partidas: FP }),
   });
 
   const poll = setInterval(async () => {
@@ -988,7 +1156,7 @@ $('btn-render').addEventListener('click', async () => {
 $('btn-dl').addEventListener('click', () => { window.location.href = `/download/${JOB_ID}`; });
 
 $('btn-novo').addEventListener('click', () => {
-  JOB_ID = null; SEGS = []; SIL = []; DURACAO = 0; FPS = 30;
+  JOB_ID = null; SEGS = []; SIL = []; REP = []; FP = []; DURACAO = 0; FPS = 30;
   vid.src = ''; $('btn-dl').hidden = true; $('btn-render').disabled = false;
   tela('tela-upload');
 });
