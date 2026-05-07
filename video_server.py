@@ -14,10 +14,11 @@ import threading
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_file, abort
 
-app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent
+app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
 
-UPLOAD_DIR = Path('video_uploads')
-OUTPUT_DIR = Path('video_outputs')
+UPLOAD_DIR = BASE_DIR / "video_uploads"
+OUTPUT_DIR = BASE_DIR / "video_outputs"
 UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -27,76 +28,251 @@ JOBS: dict = {}
 
 # ─── Helpers de mídia ────────────────────────────────────────────────────────
 
+
 def info_video(path: Path) -> tuple[float, float]:
     """Retorna (duração_s, fps)."""
     r = subprocess.run(
-        ['ffprobe', '-v', 'quiet', '-print_format', 'json',
-         '-show_streams', '-show_format', str(path)],
-        capture_output=True, text=True
+        [
+            "ffprobe",
+            "-v",
+            "quiet",
+            "-print_format",
+            "json",
+            "-show_streams",
+            "-show_format",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
     )
     d = json.loads(r.stdout)
-    duracao = float(d['format']['duration'])
+    duracao = float(d["format"]["duration"])
     fps = 30.0
-    for s in d.get('streams', []):
-        if s.get('codec_type') == 'video':
-            partes = s.get('r_frame_rate', '30/1').split('/')
+    for s in d.get("streams", []):
+        if s.get("codec_type") == "video":
+            partes = s.get("r_frame_rate", "30/1").split("/")
             fps = float(partes[0]) / float(partes[1])
             break
     return duracao, fps
 
 
-def detectar_silencio(path: Path, threshold: int = -35, dur_min: float = 0.5) -> list:
+def detectar_silencio(path: Path, threshold: int = -40, dur_min: float = 0.8) -> list:
     r = subprocess.run(
-        ['ffmpeg', '-i', str(path),
-         '-af', f'silencedetect=noise={threshold}dB:d={dur_min}',
-         '-f', 'null', '-', '-y'],
-        capture_output=True, text=True
+        [
+            "ffmpeg",
+            "-i",
+            str(path),
+            "-af",
+            f"silencedetect=noise={threshold}dB:d={dur_min}",
+            "-f",
+            "null",
+            "-",
+            "-y",
+        ],
+        capture_output=True,
+        text=True,
     )
-    starts = [float(x) for x in re.findall(r'silence_start: ([\d.]+)', r.stderr)]
-    ends   = [float(x) for x in re.findall(r'silence_end: ([\d.]+)',   r.stderr)]
+    starts = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", r.stderr)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", r.stderr)]
     result = []
     for i, s in enumerate(starts):
         e = ends[i] if i < len(ends) else None
-        result.append({'start': s, 'end': e, 'cortar': True})
+        result.append({"start": s, "end": e, "cortar": True})
     return result
+
+
+def _audio_offset(path: Path) -> float:
+    """Retorna o start_time do stream de áudio (offset iPhone/câmera ~0.81s)."""
+    r = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_streams", str(path)],
+        capture_output=True,
+        text=True,
+    )
+    for s in json.loads(r.stdout).get("streams", []):
+        if s.get("codec_type") == "audio":
+            return float(s.get("start_time", 0))
+    return 0.0
+
+
+def detectar_repeticoes(segmentos: list, limiar: float = 0.65) -> list:
+    """Detecta segmentos com texto similar (frases repetidas distantes)."""
+    import difflib
+
+    repeticoes = []
+    cortados = set()
+    for i in range(len(segmentos)):
+        for j in range(i + 1, len(segmentos)):
+            if j in cortados:
+                continue
+            t1 = segmentos[i].get("texto", "").lower().strip()
+            t2 = segmentos[j].get("texto", "").lower().strip()
+            if len(t1) < 8 or len(t2) < 8:
+                continue
+            ratio = difflib.SequenceMatcher(None, t1, t2).ratio()
+            if ratio >= limiar:
+                repeticoes.append(
+                    {
+                        "idx_original": i,
+                        "idx_repeticao": j,
+                        "start": segmentos[j]["inicio"],
+                        "end": segmentos[j]["fim"],
+                        "texto": segmentos[j]["texto"],
+                        "texto_original": segmentos[i]["texto"],
+                        "similaridade": round(ratio, 2),
+                        "cortar": True,
+                    }
+                )
+                cortados.add(j)
+    return repeticoes
+
+
+def detectar_falsas_partidas(
+    segmentos: list, janela_s: float = 25.0, min_palavras: int = 3
+) -> list:
+    """
+    Detecta false starts: a pessoa começa uma frase, trava, repete o trecho
+    e continua. Ex: "você está vendo isso [pausa] você está vendo isso e agora..."
+    Retorna a primeira ocorrência (do start até o início da repetição) para cortar.
+    """
+    palavras = []
+    for seg in segmentos:
+        for p in seg.get("palavras") or []:
+            palavras.append(
+                {"texto": p["texto"], "inicio": p["inicio"], "fim": p["fim"]}
+            )
+
+    if len(palavras) < min_palavras * 2:
+        return []
+
+    def normalizar(w):
+        import re
+
+        return re.sub(r"[^\w]", "", w.lower())
+
+    resultados = []
+    usados = set()
+    i = 0
+    while i < len(palavras) - min_palavras:
+        if i in usados:
+            i += 1
+            continue
+
+        melhor_j = None
+        melhor_len = 0
+
+        for j in range(i + 1, len(palavras)):
+            if palavras[j]["inicio"] - palavras[i]["fim"] > janela_s:
+                break
+            if j in usados:
+                continue
+
+            # tenta casar sequência a partir de i com sequência a partir de j
+            match_len = 0
+            while (
+                i + match_len < j
+                and j + match_len < len(palavras)
+                and normalizar(palavras[i + match_len]["texto"])
+                == normalizar(palavras[j + match_len]["texto"])
+                and normalizar(palavras[i + match_len]["texto"]) != ""
+            ):
+                match_len += 1
+
+            if match_len >= min_palavras and match_len > melhor_len:
+                melhor_len = match_len
+                melhor_j = j
+
+        if melhor_j is not None:
+            trecho = " ".join(palavras[k]["texto"] for k in range(i, i + melhor_len))
+            resultados.append(
+                {
+                    "start": palavras[i]["inicio"],
+                    "end": palavras[melhor_j]["inicio"],
+                    "texto": trecho,
+                    "cortar": True,
+                    "tipo": "falsa_partida",
+                }
+            )
+            for k in range(i, melhor_j):
+                usados.add(k)
+            i = melhor_j
+        else:
+            i += 1
+
+    return resultados
 
 
 def transcrever(path: Path, job_id: str) -> list:
     """Usa faster-whisper (ou openai-whisper como fallback)."""
-    audio = UPLOAD_DIR / f'{job_id}.wav'
+    # Offset do áudio em relação ao vídeo (comum em MOV de iPhone: ~0.81s)
+    offset = _audio_offset(path)
+
+    audio = UPLOAD_DIR / f"{job_id}.wav"
     subprocess.run(
-        ['ffmpeg', '-i', str(path), '-q:a', '0', '-map', 'a',
-         '-ac', '1', '-ar', '16000', str(audio), '-y'],
-        capture_output=True
+        [
+            "ffmpeg",
+            "-i",
+            str(path),
+            "-q:a",
+            "0",
+            "-map",
+            "a",
+            "-ac",
+            "1",
+            "-ar",
+            "16000",
+            str(audio),
+            "-y",
+        ],
+        capture_output=True,
     )
     try:
         from faster_whisper import WhisperModel
-        modelo = WhisperModel('base', device='cpu', compute_type='int8')
+
+        modelo = WhisperModel("base", device="cpu", compute_type="int8")
         segs, _ = modelo.transcribe(str(audio), word_timestamps=True)
         segmentos = []
         for i, seg in enumerate(segs):
             palavras = [
-                {'texto': w.word.strip(), 'inicio': w.start, 'fim': w.end}
+                {
+                    "texto": w.word.strip(),
+                    "inicio": w.start + offset,
+                    "fim": w.end + offset,
+                }
                 for w in (seg.words or [])
             ]
-            segmentos.append({
-                'id': i, 'inicio': seg.start, 'fim': seg.end,
-                'texto': seg.text.strip(), 'palavras': palavras
-            })
+            segmentos.append(
+                {
+                    "id": i,
+                    "inicio": seg.start + offset,
+                    "fim": seg.end + offset,
+                    "texto": seg.text.strip(),
+                    "palavras": palavras,
+                }
+            )
     except ImportError:
         import whisper
-        m = whisper.load_model('base')
+
+        m = whisper.load_model("base")
         res = m.transcribe(str(audio), word_timestamps=True, verbose=False)
         segmentos = []
-        for seg in res['segments']:
+        for seg in res["segments"]:
             palavras = [
-                {'texto': w['word'].strip(), 'inicio': w['start'], 'fim': w['end']}
-                for w in seg.get('words', [])
+                {
+                    "texto": w["word"].strip(),
+                    "inicio": w["start"] + offset,
+                    "fim": w["end"] + offset,
+                }
+                for w in seg.get("words", [])
             ]
-            segmentos.append({
-                'id': seg['id'], 'inicio': seg['start'], 'fim': seg['end'],
-                'texto': seg['text'].strip(), 'palavras': palavras
-            })
+            segmentos.append(
+                {
+                    "id": seg["id"],
+                    "inicio": seg["start"] + offset,
+                    "fim": seg["end"] + offset,
+                    "texto": seg["text"].strip(),
+                    "palavras": palavras,
+                }
+            )
     finally:
         audio.unlink(missing_ok=True)
     return segmentos
@@ -105,30 +281,72 @@ def transcrever(path: Path, job_id: str) -> list:
 def processar_job(job_id: str, path: Path):
     job = JOBS[job_id]
     try:
-        job.update(status='processando', progresso=5, etapa='Lendo vídeo…')
+        # Converte para MP4 se necessário (MOV/AVI/etc não rodam no browser)
+        if path.suffix.lower() != ".mp4":
+            job.update(status="processando", progresso=2, etapa="Convertendo para MP4…")
+            mp4_path = UPLOAD_DIR / f"{job_id}.mp4"
+            r = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-i",
+                    str(path),
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "fast",
+                    "-c:a",
+                    "aac",
+                    "-movflags",
+                    "+faststart",
+                    str(mp4_path),
+                    "-y",
+                ],
+                capture_output=True,
+            )
+            if mp4_path.exists():
+                path.unlink(missing_ok=True)
+                path = mp4_path
+                job["path"] = str(path)
+
+        job.update(status="processando", progresso=5, etapa="Lendo vídeo…")
         duracao, fps = info_video(path)
         job.update(duracao=duracao, fps=round(fps, 3), progresso=15)
 
-        job.update(etapa='Transcrevendo com Whisper (pode demorar)…', progresso=20)
+        job.update(etapa="Transcrevendo com Whisper (pode demorar)…", progresso=20)
         segmentos = transcrever(path, job_id)
         job.update(segmentos=segmentos, progresso=75)
 
-        job.update(etapa='Detectando silêncios…', progresso=80)
+        job.update(etapa="Detectando silêncios…", progresso=80)
         silencio = detectar_silencio(path)
-        job.update(silencio=silencio, progresso=100, etapa='Pronto!', status='ok')
+        job.update(silencio=silencio, progresso=90)
+
+        job.update(etapa="Detectando repetições…", progresso=93)
+        repeticoes = detectar_repeticoes(segmentos)
+
+        job.update(etapa="Detectando falsas partidas…", progresso=97)
+        falsas_partidas = detectar_falsas_partidas(segmentos)
+
+        job.update(
+            repeticoes=repeticoes,
+            falsas_partidas=falsas_partidas,
+            progresso=100,
+            etapa="Pronto!",
+            status="ok",
+        )
 
     except Exception as e:
-        job.update(status='erro', erro=str(e))
+        job.update(status="erro", erro=str(e))
 
 
 # ─── Geração de legendas ASS ─────────────────────────────────────────────────
+
 
 def ts_ass(s: float) -> str:
     """Formata segundos para H:MM:SS.cc (formato ASS)."""
     h = int(s // 3600)
     m = int((s % 3600) // 60)
     sec = s % 60
-    return f'{h}:{m:02d}:{sec:05.2f}'
+    return f"{h}:{m:02d}:{sec:05.2f}"
 
 
 def ajustar_tempo(t: float, mantidos: list) -> float | None:
@@ -158,11 +376,12 @@ Style: Default,Arial,90,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,1,0,0,0,100,
 [Events]
 Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
 """
+
     # ASS usa ABGR: laranja (#FF9600) → &H000096FF&
     def fmt(p: dict) -> str:
-        t = (p.get('texto') or '').upper()
-        if p.get('enfase'):
-            return r'{\c&H000096FF&\fs100}' + t + r'{\c&H00FFFFFF&\fs90}'
+        t = (p.get("texto") or "").upper()
+        if p.get("enfase"):
+            return r"{\c&H000096FF&\fs100}" + t + r"{\c&H00FFFFFF&\fs90}"
         return t
 
     linhas = []
@@ -170,76 +389,116 @@ Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
     if chunk_size >= 999:
         # Modo frase: cada segmento = uma linha
         for seg in segmentos:
-            ini = ajustar_tempo(seg['inicio'], mantidos)
-            fim = ajustar_tempo(seg['fim'], mantidos)
+            ini = ajustar_tempo(seg["inicio"], mantidos)
+            fim = ajustar_tempo(seg["fim"], mantidos)
             if ini is None or fim is None:
                 continue
-            pals = seg.get('palavras') or [{'texto': seg['texto'], 'enfase': False}]
+            pals = seg.get("palavras") or [{"texto": seg["texto"], "enfase": False}]
             linhas.append(
-                f'Dialogue: 0,{ts_ass(ini)},{ts_ass(fim)},Default,,0,0,0,,{" ".join(fmt(p) for p in pals)}'
+                f"Dialogue: 0,{ts_ass(ini)},{ts_ass(fim)},Default,,0,0,0,,{' '.join(fmt(p) for p in pals)}"
             )
     else:
-        palavras = [p for seg in segmentos for p in (seg.get('palavras') or [])]
+        palavras = [p for seg in segmentos for p in (seg.get("palavras") or [])]
         if not palavras:
             palavras = [
-                {'texto': seg['texto'], 'inicio': seg['inicio'],
-                 'fim': seg['fim'], 'enfase': False}
+                {
+                    "texto": seg["texto"],
+                    "inicio": seg["inicio"],
+                    "fim": seg["fim"],
+                    "enfase": False,
+                }
                 for seg in segmentos
             ]
         for i in range(0, len(palavras), chunk_size):
-            bloco = palavras[i:i + chunk_size]
-            ini = ajustar_tempo(bloco[0]['inicio'], mantidos)
-            fim = ajustar_tempo(bloco[-1]['fim'], mantidos)
+            bloco = palavras[i : i + chunk_size]
+            ini = ajustar_tempo(bloco[0]["inicio"], mantidos)
+            fim = ajustar_tempo(bloco[-1]["fim"], mantidos)
             if ini is None or fim is None:
                 continue
             linhas.append(
-                f'Dialogue: 0,{ts_ass(ini)},{ts_ass(fim)},Default,,0,0,0,,{" ".join(fmt(p) for p in bloco)}'
+                f"Dialogue: 0,{ts_ass(ini)},{ts_ass(fim)},Default,,0,0,0,,{' '.join(fmt(p) for p in bloco)}"
             )
 
-    return header + '\n'.join(linhas)
+    return header + "\n".join(linhas)
 
 
 # ─── Renderização ────────────────────────────────────────────────────────────
 
-def executar_render(job_id: str, silencio: list, segmentos: list, chunk_size: int):
+
+def executar_render(
+    job_id: str,
+    silencio: list,
+    segmentos: list,
+    chunk_size: int,
+    repeticoes: list = None,
+    falsas_partidas: list = None,
+):
     job = JOBS[job_id]
     try:
-        job['render_status'] = 'renderizando'
-        path_in  = Path(job['path'])
-        duracao  = job['duracao']
+        job["render_status"] = "renderizando"
+        path_in = Path(job["path"])
+        duracao = job["duracao"]
 
-        # Calcula segmentos a manter
-        cortes = sorted([s for s in silencio if s.get('cortar')], key=lambda x: x['start'])
+        # Combina silêncios, repetições e falsas partidas a cortar
+        intervalos_corte = [s for s in silencio if s.get("cortar")]
+        for rep in repeticoes or []:
+            if rep.get("cortar"):
+                intervalos_corte.append({"start": rep["start"], "end": rep["end"]})
+        for fp in falsas_partidas or []:
+            if fp.get("cortar"):
+                intervalos_corte.append({"start": fp["start"], "end": fp["end"]})
+        cortes = sorted(intervalos_corte, key=lambda x: x["start"])
         mantidos: list[tuple[float, float]] = []
         pos = 0.0
         for c in cortes:
-            fim_corte = c.get('end') or c['start']
-            if c['start'] > pos + 0.02:
-                mantidos.append((pos, c['start']))
+            fim_corte = c.get("end") or c["start"]
+            if c["start"] > pos + 0.02:
+                mantidos.append((pos, c["start"]))
             pos = fim_corte
         if pos < duracao - 0.02:
             mantidos.append((pos, duracao))
         if not mantidos:
             mantidos = [(0.0, duracao)]
 
-        ass_path  = OUTPUT_DIR / f'{job_id}.ass'
-        path_temp = OUTPUT_DIR / f'{job_id}_cut.mp4'
-        path_out  = OUTPUT_DIR / f'{job_id}_final.mp4'
+        ass_path = OUTPUT_DIR / f"{job_id}.ass"
+        path_temp = OUTPUT_DIR / f"{job_id}_cut.mp4"
+        path_out = OUTPUT_DIR / f"{job_id}_final.mp4"
 
         # Passo 1: cortar silêncios (se necessário)
         if len(mantidos) > 1:
             partes_v, partes_a = [], []
             for i, (ini, fim) in enumerate(mantidos):
-                partes_v.append(f'[0:v]trim={ini:.4f}:{fim:.4f},setpts=PTS-STARTPTS[v{i}]')
-                partes_a.append(f'[0:a]atrim={ini:.4f}:{fim:.4f},asetpts=PTS-STARTPTS[a{i}]')
+                partes_v.append(
+                    f"[0:v]trim={ini:.4f}:{fim:.4f},setpts=PTS-STARTPTS[v{i}]"
+                )
+                partes_a.append(
+                    f"[0:a]atrim={ini:.4f}:{fim:.4f},asetpts=PTS-STARTPTS[a{i}]"
+                )
             n = len(mantidos)
-            juncao = ''.join(f'[v{i}][a{i}]' for i in range(n))
-            fc = ';'.join(partes_v + partes_a + [f'{juncao}concat=n={n}:v=1:a=1[vo][ao]'])
+            juncao = "".join(f"[v{i}][a{i}]" for i in range(n))
+            fc = ";".join(
+                partes_v + partes_a + [f"{juncao}concat=n={n}:v=1:a=1[vo][ao]"]
+            )
             r = subprocess.run(
-                ['ffmpeg', '-i', str(path_in), '-filter_complex', fc,
-                 '-map', '[vo]', '-map', '[ao]',
-                 '-c:v', 'libx264', '-c:a', 'aac', str(path_temp), '-y'],
-                capture_output=True, text=True
+                [
+                    "ffmpeg",
+                    "-i",
+                    str(path_in),
+                    "-filter_complex",
+                    fc,
+                    "-map",
+                    "[vo]",
+                    "-map",
+                    "[ao]",
+                    "-c:v",
+                    "libx264",
+                    "-c:a",
+                    "aac",
+                    str(path_temp),
+                    "-y",
+                ],
+                capture_output=True,
+                text=True,
             )
             if r.returncode != 0:
                 raise RuntimeError(r.stderr[-600:])
@@ -248,105 +507,126 @@ def executar_render(job_id: str, silencio: list, segmentos: list, chunk_size: in
             base_para_legendas = path_in
 
         # Passo 2: gerar e queimar legendas
-        ass_path.write_text(gerar_ass(segmentos, mantidos, chunk_size), encoding='utf-8')
+        ass_path.write_text(
+            gerar_ass(segmentos, mantidos, chunk_size), encoding="utf-8"
+        )
         r2 = subprocess.run(
-            ['ffmpeg', '-i', str(base_para_legendas),
-             '-vf', f"ass='{ass_path}'",
-             '-c:v', 'libx264', '-c:a', 'copy', str(path_out), '-y'],
-            capture_output=True, text=True
+            [
+                "ffmpeg",
+                "-i",
+                str(base_para_legendas),
+                "-vf",
+                f"ass='{ass_path}'",
+                "-c:v",
+                "libx264",
+                "-c:a",
+                "copy",
+                str(path_out),
+                "-y",
+            ],
+            capture_output=True,
+            text=True,
         )
         if path_temp.exists():
             path_temp.unlink()
         if r2.returncode != 0:
             raise RuntimeError(r2.stderr[-600:])
 
-        job.update(path_out=str(path_out), render_status='pronto')
+        job.update(path_out=str(path_out), render_status="pronto")
 
     except Exception as e:
-        job.update(render_status='erro', render_erro=str(e))
+        job.update(render_status="erro", render_erro=str(e))
 
 
 # ─── Rotas ───────────────────────────────────────────────────────────────────
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return render_template('editor.html')
+    return render_template("editor.html")
 
 
-@app.route('/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def upload():
-    f = request.files.get('video')
+    f = request.files.get("video")
     if not f:
-        return jsonify({'erro': 'Nenhum arquivo enviado.'}), 400
+        return jsonify({"erro": "Nenhum arquivo enviado."}), 400
     jid = uuid.uuid4().hex[:8]
-    ext = Path(f.filename).suffix.lower() or '.mp4'
-    path = UPLOAD_DIR / f'{jid}{ext}'
+    ext = Path(f.filename).suffix.lower() or ".mp4"
+    path = UPLOAD_DIR / f"{jid}{ext}"
     f.save(path)
     JOBS[jid] = {
-        'status': 'aguardando', 'progresso': 0,
-        'etapa': 'Arquivo recebido.', 'path': str(path), 'nome': f.filename,
-        'render_status': 'idle'
+        "status": "aguardando",
+        "progresso": 0,
+        "etapa": "Arquivo recebido.",
+        "path": str(path),
+        "nome": f.filename,
+        "render_status": "idle",
     }
     threading.Thread(target=processar_job, args=(jid, path), daemon=True).start()
-    return jsonify({'job_id': jid})
+    return jsonify({"job_id": jid})
 
 
-@app.route('/status/<jid>')
+@app.route("/status/<jid>")
 def status(jid):
     job = JOBS.get(jid)
     if not job:
-        return jsonify({'erro': 'Não encontrado.'}), 404
+        return jsonify({"erro": "Não encontrado."}), 404
     # Não serializa paths internos desnecessários
-    dados = {k: v for k, v in job.items() if k != 'path'}
+    dados = {k: v for k, v in job.items() if k != "path"}
     return jsonify(dados)
 
 
-@app.route('/video/<jid>')
+@app.route("/video/<jid>")
 def servir_video(jid):
     job = JOBS.get(jid)
     if not job:
         abort(404)
-    return send_file(job['path'])
+    return send_file(job["path"], mimetype="video/mp4")
 
 
-@app.route('/renderizar/<jid>', methods=['POST'])
+@app.route("/renderizar/<jid>", methods=["POST"])
 def renderizar(jid):
     job = JOBS.get(jid)
-    if not job or job['status'] != 'ok':
-        return jsonify({'erro': 'Job não pronto.'}), 400
+    if not job or job["status"] != "ok":
+        return jsonify({"erro": "Job não pronto."}), 400
     cfg = request.get_json() or {}
-    silencio   = cfg.get('silencio',   job.get('silencio', []))
-    segmentos  = cfg.get('segmentos',  job['segmentos'])   # transcrição editada
-    chunk_size = int(cfg.get('chunk_size', 4))              # estilo de legenda
-    job['silencio']  = silencio
-    job['segmentos'] = segmentos
+    silencio = cfg.get("silencio", job.get("silencio", []))
+    segmentos = cfg.get("segmentos", job["segmentos"])
+    chunk_size = int(cfg.get("chunk_size", 4))
+    repeticoes = cfg.get("repeticoes", job.get("repeticoes", []))
+    falsas_partidas = cfg.get("falsas_partidas", job.get("falsas_partidas", []))
+    job["silencio"] = silencio
+    job["segmentos"] = segmentos
+    job["repeticoes"] = repeticoes
+    job["falsas_partidas"] = falsas_partidas
     threading.Thread(
-        target=executar_render, args=(jid, silencio, segmentos, chunk_size), daemon=True
+        target=executar_render,
+        args=(jid, silencio, segmentos, chunk_size, repeticoes, falsas_partidas),
+        daemon=True,
     ).start()
-    return jsonify({'ok': True})
+    return jsonify({"ok": True})
 
 
-@app.route('/render_status/<jid>')
+@app.route("/render_status/<jid>")
 def render_status(jid):
     job = JOBS.get(jid)
     if not job:
-        return jsonify({'erro': 'Não encontrado.'}), 404
-    return jsonify({
-        'status': job.get('render_status', 'idle'),
-        'erro': job.get('render_erro')
-    })
-
-
-@app.route('/download/<jid>')
-def download(jid):
-    job = JOBS.get(jid)
-    if not job or 'path_out' not in job:
-        abort(404)
-    return send_file(
-        job['path_out'], as_attachment=True,
-        download_name=f'editado_{jid}.mp4'
+        return jsonify({"erro": "Não encontrado."}), 404
+    return jsonify(
+        {"status": job.get("render_status", "idle"), "erro": job.get("render_erro")}
     )
 
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+@app.route("/download/<jid>")
+def download(jid):
+    job = JOBS.get(jid)
+    if not job or "path_out" not in job:
+        abort(404)
+    return send_file(
+        job["path_out"], as_attachment=True, download_name=f"editado_{jid}.mp4"
+    )
+
+
+if __name__ == "__main__":
+    app.run(debug=False, port=5001, host="0.0.0.0")
