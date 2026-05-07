@@ -371,6 +371,37 @@
     .sil-info { flex: 1; min-width: 0; }
     .sil-int  { font-size: .78rem; font-weight: 600; font-variant-numeric: tabular-nums; }
     .sil-dur  { font-size: .68rem; color: var(--muted); }
+    .sil-del  { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .85rem; padding: .1rem .3rem; border-radius: 4px; transition: var(--tr); }
+    .sil-del:hover { color: var(--verm); background: var(--verm-bg); }
+
+    /* ── Corte manual ── */
+    .corte-manual {
+      margin-top: .6rem; padding: .6rem .75rem;
+      background: rgba(239,68,68,.06); border: 1px dashed rgba(239,68,68,.3);
+      border-radius: var(--r-sm);
+    }
+    .corte-manual-titulo { font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--verm); margin-bottom: .45rem; }
+    .corte-row { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+    .corte-inp {
+      width: 70px; background: var(--s2); border: 1px solid var(--borda);
+      border-radius: 6px; padding: .3rem .5rem; font-family: inherit;
+      font-size: .78rem; color: var(--texto); outline: none; text-align: center;
+      transition: border-color .18s;
+    }
+    .corte-inp:focus { border-color: var(--verm); }
+    .corte-sep { font-size: .75rem; color: var(--muted); }
+    .btn-mark {
+      background: var(--s2); border: 1px solid var(--borda); color: var(--muted);
+      border-radius: 6px; padding: .28rem .55rem; font-size: .72rem;
+      font-family: inherit; cursor: pointer; transition: var(--tr); white-space: nowrap;
+    }
+    .btn-mark:hover { border-color: var(--verm); color: var(--verm); }
+    .btn-add-corte {
+      background: var(--verm-bg); border: 1px solid var(--verm); color: var(--verm);
+      border-radius: 6px; padding: .3rem .7rem; font-size: .78rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: var(--tr); white-space: nowrap;
+    }
+    .btn-add-corte:hover { background: rgba(239,68,68,.22); }
 
     /* ── Repetições ── */
     .rep-lista { display: flex; flex-direction: column; gap: .4rem; max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--amarelo) transparent; }
@@ -537,10 +568,23 @@
         <!-- preenchido dinamicamente -->
       </div>
 
-      <!-- 3. Silêncios -->
+      <!-- 3. Cortes -->
       <div class="secao">
-        <p class="sec-titulo">Silêncios detectados</p>
+        <p class="sec-titulo">Cortes</p>
         <div class="sil-lista" id="sil-lista"></div>
+
+        <!-- Adicionar corte manual -->
+        <div class="corte-manual">
+          <p class="corte-manual-titulo">+ Adicionar corte manual</p>
+          <div class="corte-row">
+            <button class="btn-mark" id="btn-mark-ini" title="Usar tempo atual do vídeo">▶ Início</button>
+            <input class="corte-inp" id="corte-ini" type="number" placeholder="0.0" min="0" step="0.1">
+            <span class="corte-sep">→</span>
+            <button class="btn-mark" id="btn-mark-fim" title="Usar tempo atual do vídeo">▶ Fim</button>
+            <input class="corte-inp" id="corte-fim" type="number" placeholder="0.0" min="0" step="0.1">
+            <button class="btn-add-corte" id="btn-add-corte">✕ Cortar</button>
+          </div>
+        </div>
       </div>
 
       <!-- 4. Falsas partidas -->
@@ -939,27 +983,64 @@ function renderizarRepeticoes() {
   });
 }
 
-// ── Silêncios ─────────────────────────────────────────────────────────────────
+// ── Silêncios / Cortes ────────────────────────────────────────────────────────
 function renderizarSilencio() {
   const lista = $('sil-lista');
   lista.innerHTML = '';
-  if (!SIL.length) { lista.innerHTML = '<p style="font-size:.78rem;color:var(--muted)">Nenhum silêncio detectado.</p>'; return; }
+  if (!SIL.length) {
+    lista.innerHTML = '<p style="font-size:.78rem;color:var(--muted);padding:.2rem 0">Nenhum corte automático detectado.</p>';
+    return;
+  }
   SIL.forEach((s, i) => {
     const dur = s.end ? (s.end - s.start).toFixed(1) : '?';
+    const manual = s.manual ? ' · manual' : '';
     const el = document.createElement('div');
     el.className = 'sil-item'; el.dataset.idx = i;
     el.innerHTML = `
-      <div class="sil-tog ${s.cortar ? 'cortar' : 'manter'}" id="st-${i}">${s.cortar ? '✕' : '✓'}</div>
+      <div class="sil-tog ${s.cortar ? 'cortar' : 'manter'}">${s.cortar ? '✕' : '✓'}</div>
       <div class="sil-info">
-        <p class="sil-int">${fmt(s.start, 0)} → ${s.end ? fmt(s.end, 0) : '…'}</p>
-        <p class="sil-dur">${dur}s · ${s.cortar ? 'será cortado' : 'será mantido'}</p>
-      </div>`;
-    el.addEventListener('click', () => toggleSil(i));
+        <p class="sil-int">${fmt(s.start, 1)} → ${s.end ? fmt(s.end, 1) : '…'}</p>
+        <p class="sil-dur">${dur}s${manual} · ${s.cortar ? 'será cortado' : 'será mantido'}</p>
+      </div>
+      <button class="sil-del" title="Remover este corte">🗑</button>`;
+    el.querySelector('.sil-tog, .sil-info').addEventListener &&
+      el.addEventListener('click', e => { if (!e.target.closest('.sil-del')) toggleSil(i); });
+    el.querySelector('.sil-del').addEventListener('click', e => {
+      e.stopPropagation(); removerSil(i);
+    });
     lista.appendChild(el);
   });
 }
 
 function toggleSil(i) { SIL[i].cortar = !SIL[i].cortar; renderizarSilencio(); desenharTL(); }
+function removerSil(i) { SIL.splice(i, 1); renderizarSilencio(); desenharTL(); }
+
+// ── Corte manual ──────────────────────────────────────────────────────────────
+$('btn-mark-ini').addEventListener('click', () => {
+  $('corte-ini').value = vid.currentTime.toFixed(1);
+});
+$('btn-mark-fim').addEventListener('click', () => {
+  $('corte-fim').value = vid.currentTime.toFixed(1);
+});
+$('btn-add-corte').addEventListener('click', () => {
+  const ini = parseFloat($('corte-ini').value);
+  const fim = parseFloat($('corte-fim').value);
+  if (isNaN(ini) || isNaN(fim) || ini >= fim) {
+    $('corte-ini').style.borderColor = 'var(--verm)';
+    $('corte-fim').style.borderColor = 'var(--verm)';
+    setTimeout(() => {
+      $('corte-ini').style.borderColor = '';
+      $('corte-fim').style.borderColor = '';
+    }, 800);
+    return;
+  }
+  SIL.push({ start: ini, end: fim, cortar: true, manual: true });
+  SIL.sort((a, b) => a.start - b.start);
+  $('corte-ini').value = '';
+  $('corte-fim').value = '';
+  renderizarSilencio();
+  desenharTL();
+});
 
 // ── Legenda em tempo real ─────────────────────────────────────────────────────
 // Cache flat de palavras para não recriar array a cada frame
