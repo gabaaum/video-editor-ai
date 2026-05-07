@@ -318,6 +318,10 @@
     .chip.enfase:hover::after { content: '✏'; background: var(--laranja); }
 
     /* Input inline de edição de palavra */
+    .chip-editor {
+      display: inline-flex; align-items: center; gap: 2px;
+      vertical-align: middle;
+    }
     .chip-input {
       padding: .14rem .35rem; border-radius: 5px; font-size: .73rem;
       border: 1px solid var(--acento); background: var(--s3);
@@ -330,6 +334,14 @@
       box-shadow: 0 0 0 3px rgba(255,150,0,.28);
       color: var(--laranja);
     }
+    .chip-em-btn {
+      padding: 0 .3rem; font-size: .75rem; line-height: 1.55;
+      background: var(--s2); border: 1px solid var(--borda);
+      color: var(--muted); border-radius: 4px; cursor: pointer;
+      transition: var(--tr); font-family: inherit; flex-shrink: 0;
+    }
+    .chip-em-btn:hover     { border-color: var(--laranja); color: var(--laranja); }
+    .chip-em-btn.em-ativo  { background: rgba(255,150,0,.18); border-color: var(--laranja); color: var(--laranja); }
 
     /* Edit mode (bloco inteiro — mantido para fallback) */
     .seg-edit { margin-top: .45rem; }
@@ -787,33 +799,33 @@ function criarChip(p, container, segIdx, palIdx) {
   chip.className = 'chip' + (p.enfase ? ' enfase' : '');
   chip.textContent = p.texto;
   if (segIdx !== undefined) { chip.dataset.seg = segIdx; chip.dataset.pal = palIdx; }
-  chip.title = 'Clique para editar · Duplo clique para ênfase';
-
-  let timer = null;
-  chip.addEventListener('click', () => {
-    if (timer) {
-      // Duplo clique → toggle ênfase
-      clearTimeout(timer); timer = null;
-      p.enfase = !p.enfase;
-      chip.classList.toggle('enfase');
-    } else {
-      timer = setTimeout(() => {
-        timer = null;
-        abrirEdicaoInline(p, chip, container);
-      }, 220);
-    }
-  });
+  chip.title = 'Clique para editar · ★ para ênfase';
+  chip.addEventListener('click', () => abrirEdicaoInline(p, chip, container, segIdx, palIdx));
   return chip;
 }
 
-function abrirEdicaoInline(p, chip, container) {
-  if (container && container.querySelector('.chip-input')) return;
+function abrirEdicaoInline(p, chip, container, segIdx, palIdx) {
+  if (container && container.querySelector('.chip-editor')) return;
 
   const textoOriginal = p.texto;
+  const enfaseOriginal = p.enfase;
+
+  const editor = document.createElement('span');
+  editor.className = 'chip-editor';
+
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'chip-input' + (p.enfase ? ' enfase' : '');
   input.value = p.texto;
+
+  const emBtn = document.createElement('button');
+  emBtn.type = 'button';
+  emBtn.className = 'chip-em-btn' + (p.enfase ? ' em-ativo' : '');
+  emBtn.textContent = '★';
+  emBtn.title = 'Ênfase';
+
+  editor.appendChild(input);
+  editor.appendChild(emBtn);
 
   function ajustarLargura() {
     input.style.width = Math.max(3, input.value.length + 1) + 'ch';
@@ -821,7 +833,15 @@ function abrirEdicaoInline(p, chip, container) {
   ajustarLargura();
   input.addEventListener('input', ajustarLargura);
 
-  chip.replaceWith(input);
+  emBtn.addEventListener('mousedown', e => {
+    e.preventDefault(); // impede blur no input
+    p.enfase = !p.enfase;
+    emBtn.classList.toggle('em-ativo', p.enfase);
+    input.classList.toggle('enfase', p.enfase);
+    invalidarCache();
+  });
+
+  chip.replaceWith(editor);
   input.focus();
   input.select();
 
@@ -830,20 +850,22 @@ function abrirEdicaoInline(p, chip, container) {
     if (confirmado) return;
     confirmado = true;
     const novo = input.value.trim();
-    if (novo) p.texto = novo;
-    else p.texto = textoOriginal;
-    const novoChip = criarChip(p, container);
-    input.replaceWith(novoChip);
+    p.texto = novo || textoOriginal;
+    const novoChip = criarChip(p, container, segIdx, palIdx);
+    editor.replaceWith(novoChip);
+    invalidarCache();
   }
 
   input.addEventListener('blur', confirmar);
   input.addEventListener('keydown', e => {
-    if (e.key === 'Enter')  { e.preventDefault(); confirmar(); }
+    if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
     if (e.key === 'Escape') {
       e.preventDefault();
       confirmado = true;
       p.texto = textoOriginal;
-      input.replaceWith(criarChip(p, container));
+      p.enfase = enfaseOriginal;
+      editor.replaceWith(criarChip(p, container, segIdx, palIdx));
+      invalidarCache();
     }
     e.stopPropagation();
   });
