@@ -276,27 +276,21 @@
     .seg-tempo { font-size: .66rem; color: var(--muted); font-variant-numeric: tabular-nums; cursor: pointer; }
     .seg-tempo:hover { color: var(--acento-c); }
 
-    .btn-editar-seg {
-      background: none; border: 1px solid transparent; color: var(--muted);
-      cursor: pointer; font-size: .75rem; padding: .12rem .32rem;
-      border-radius: 5px; transition: var(--tr); font-family: inherit;
-    }
-    .btn-editar-seg:hover { border-color: var(--borda); color: var(--acento-c); }
+    .btn-editar-seg { display: none; }
 
     /* Chips de palavras */
-    .chips-wrap { display: flex; flex-wrap: wrap; gap: .22rem; }
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: .28rem; }
     .chip {
-      padding: .16rem .4rem; border-radius: 5px; font-size: .73rem;
-      cursor: pointer; border: 1px solid var(--borda); background: var(--s2);
-      color: var(--texto); transition: var(--tr); user-select: none; line-height: 1.4;
+      padding: .22rem .5rem; border-radius: 5px; font-size: .78rem;
+      cursor: pointer;
+      border: 1px solid rgba(120,80,255,.5);
+      background: rgba(120,80,255,.12);
+      color: var(--texto); transition: var(--tr); user-select: none; line-height: 1.5;
       position: relative;
     }
-    .chip:hover { border-color: var(--acento-c); color: var(--acento-c); }
-    .chip:hover::after {
-      content: '✏';
-      position: absolute; top: -8px; right: -6px;
-      font-size: .58rem; background: var(--acento); color: #fff;
-      border-radius: 3px; padding: .05rem .22rem; pointer-events: none;
+    .chip:hover {
+      border-color: var(--acento-c); color: #fff;
+      background: rgba(120,80,255,.28);
     }
     .chip.ativo {
       background: rgba(120,80,255,.28); border-color: var(--acento-c);
@@ -531,7 +525,7 @@
           <span class="estilo-preview">A B … Z</span>Frase inteira
         </button>
       </div>
-      <p class="sec-dica">💡 Clique nas palavras para marcar <strong style="color:var(--laranja)">ênfase</strong>. Use ✏ para corrigir transcrição.</p>
+      <p class="sec-dica">💡 As palavras da transcrição aparecem como <strong style="color:var(--acento-c)">botões roxos</strong> abaixo. <strong>Clique em qualquer palavra</strong> para corrigir o texto ou marcar <strong style="color:var(--laranja)">ênfase ★</strong>.</p>
     </div>
 
     <!-- 2-5. Área rolável central -->
