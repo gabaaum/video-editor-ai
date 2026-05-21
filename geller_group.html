@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geller Group — Estratégia Digital & Coprodução</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --navy:      #1C2B3A;
+      --navy-deep: #15212E;
+      --gold:      #B89468;
+      --gold-lt:   #CDB08A;
+      --cream:     #F0EBE3;
+      --cream-dk:  #E4DDD4;
+      --white:     #FFFFFF;
+      --text-dark: #1C1C1C;
+      --text-mid:  #4A4A4A;
+      --text-lt:   #7A7A7A;
+
+      --ff-display: 'Playfair Display', serif;
+      --ff-serif:   'Cormorant Garamond', serif;
+      --ff-sans:    'DM Sans', sans-serif;
+
+      --radius: 4px;
+      --gap:    clamp(64px, 10vw, 120px);
+    }
+
+    /* ─── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--ff-sans);
+      color: var(--text-dark);
+      background: var(--cream);
+      -webkit-font-smoothing: antialiased;
+    }
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ─── UTILITIES ──────────────────────────────────────────── */
+    .container { width: min(1160px, 92vw); margin-inline: auto; }
+    .tag {
+      display: inline-block;
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: var(--ff-display);
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 400;
+      line-height: 1.12;
+      color: var(--navy-deep);
+    }
+    .section-title em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--gold);
+    }
+    .section-lead {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.6vw, 17px);
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-mid);
+      max-width: 580px;
+    }
+    .divider {
+      width: 48px; height: 1px;
+      background: var(--gold);
+      margin: 28px 0;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 36px;
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all .25s ease;
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: var(--white);
+      border: 1px solid var(--gold);
+    }
+    .btn-gold:hover { background: var(--gold-lt); border-color: var(--gold-lt); }
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,.4);
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ─── NAV ────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 22px 0;
+      background: rgba(28, 43, 58, .92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(184,148,104,.15);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: var(--ff-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--white);
+      letter-spacing: .03em;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex; gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.7);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta { display: flex; gap: 12px; align-items: center; }
+
+    /* ─── HERO ───────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      background: var(--navy-deep);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 140px 0 100px;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 80% 50%, rgba(184,148,104,.08) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 80% at 10% 30%, rgba(184,148,104,.05) 0%, transparent 60%);
+    }
+    .hero-label {
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hero-label::before {
+      content: '';
+      display: block; width: 32px; height: 1px;
+      background: var(--gold);
+    }
+    .hero-title {
+      font-family: var(--ff-display);
+      font-size: clamp(44px, 6.5vw, 82px);
+      font-weight: 400;
+      line-height: 1.06;
+      color: var(--white);
+      margin-bottom: 32px;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    .hero-sub {
+      font-family: var(--ff-serif);
+      font-size: clamp(17px, 2vw, 22px);
+      font-weight: 300;
+      line-height: 1.65;
+      color: rgba(255,255,255,.68);
+      max-width: 560px;
+      margin-bottom: 48px;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .hero-stats {
+      margin-top: 80px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .stat-item {
+      padding: 32px 36px;
+      background: rgba(255,255,255,.03);
+      backdrop-filter: blur(4px);
+    }
+    .stat-number {
+      font-family: var(--ff-display);
+      font-size: clamp(30px, 4vw, 44px);
+      font-weight: 400;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.5);
+      text-transform: uppercase;
+    }
+
+    /* ─── SOBRE ──────────────────────────────────────────────── */
+    #sobre {
+      padding: var(--gap) 0;
+      background: var(--cream);
+    }
+    .sobre-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .sobre-visual {
+      position: relative;
+    }
+    .sobre-card-bg {
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: 56px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sobre-card-bg::before {
+      content: 'G';
+      position: absolute;
+      right: -20px; bottom: -40px;
+      font-family: var(--ff-display);
+      font-size: 220px;
+      font-weight: 700;
+      color: rgba(255,255,255,.03);
+      line-height: 1;
+      pointer-events: none;
+    }
+    .sobre-card-quote {
+      font-family: var(--ff-serif);
+      font-size: clamp(20px, 2.4vw, 28px);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+    .sobre-card-quote strong { color: var(--gold); font-weight: 500; font-style: normal; }
+    .sobre-card-author {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .author-dot {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: grid; place-items: center;
+      font-family: var(--ff-display);
+      font-size: 18px;
+      color: var(--white);
+      font-weight: 500;
+    }
+    .author-info p:first-child {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--white);
+    }
+    .author-info p:last-child {
+      font-size: 12px;
+      color: rgba(255,255,255,.5);
+      margin-top: 2px;
+    }
+    .sobre-badge {
+      position: absolute;
+      right: -20px; top: 32px;
+      background: var(--gold);
+      color: var(--white);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    }
+    .sobre-badge-num {
+      font-family: var(--ff-display);
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1;
+    }
+    .sobre-badge-txt {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      opacity: .85;
+    }
+
+    /* ─── FILOSOFIA ──────────────────────────────────────────── */
+    #filosofia {
+      padding: var(--gap) 0;
+      background: var(--navy-deep);
+    }
+    .filo-header { text-align: center; margin-bottom: 64px; }
+    .filo-header .section-title { color: var(--white); }
+    .filo-header .section-lead { color: rgba(255,255,255,.6); margin-inline: auto; text-align: center; }
+    .filo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .filo-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      padding: 48px 40px;
+      position: relative;
+      transition: background .25s;
+    }
+    .filo-card:hover { background: rgba(184,148,104,.07); }
+    .filo-card-num {
+      font-family: var(--ff-display);
+      font-size: 60px;
+      font-weight: 400;
+      color: rgba(184,148,104,.15);
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+    .filo-card-title {
+      font-family: var(--ff-display);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .filo-card-text {
+      font-size: 14px;
+      line-height: 1.75;
+      color: rgba(255,255,255,.55);
+    }
+    .filo-card-bar {
+      width: 32px; height: 2px;
+      background: var(--gold);
+      margin-bottom: 28px;
+    }
+
+    /* ─── FRENTES ────────────────────────────────────────────── */
+    #frentes {
+      padding: var(--gap) 0;
+      background: var(--cream);
+    }
+    .frentes-header { margin-bottom: 64px; }
+    .frentes-list { display: flex; flex-direction: column; gap: 2px; }
+    .frente-item {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      padding: 48px 0;
+      border-top: 1px solid var(--cream-dk);
+      transition: all .2s;
+    }
+    .frente-item:last-child { border-bottom: 1px solid var(--cream-dk); }
+    .frente-num {
+      font-family: var(--ff-display);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: .1em;
+      padding-top: 6px;
+    }
+    .frente-title {
+      font-family: var(--ff-display);
+      font-size: clamp(22px, 2.8vw, 32px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--navy-deep);
+    }
+    .frente-title em { font-style: italic; color: var(--gold); }
+    .frente-obj {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .frente-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .frente-list li {
+      display: flex; gap: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-mid);
+    }
+    .frente-list li::before {
+      content: '▶';
+      color: var(--gold);
+      font-size: 9px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    /* ─── PARA QUEM ──────────────────────────────────────────── */
+    #para-quem {
+      padding: var(--gap) 0;
+      background: var(--navy);
+    }
+    .pq-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .pq-left .section-title { color: var(--white); }
+    .pq-left .section-lead { color: rgba(255,255,255,.6); }
+    .pq-list {
+      list-style: none;
+      display: flex; flex-direction: column;
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .pq-list li {
+      display: flex; gap: 16px;
+      align-items: flex-start;
+    }
+    .pq-arrow {
+      width: 28px; height: 28px; flex-shrink: 0;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      color: var(--gold);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .pq-list-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: rgba(255,255,255,.75);
+    }
+    .pq-right {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .pq-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: background .25s, border-color .25s;
+    }
+    .pq-card:hover { background: rgba(184,148,104,.1); border-color: rgba(184,148,104,.3); }
+    .pq-card-icon {
+      font-family: var(--ff-display);
+      font-size: 28px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--gold);
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+    .pq-card-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .pq-card-text { font-size: 12px; color: rgba(255,255,255,.45); line-height: 1.6; }
+
+    /* ─── TIME ───────────────────────────────────────────────── */
+    #time {
+      padding: var(--gap) 0;
+      background: var(--cream);
+    }
+    .time-header { text-align: center; margin-bottom: 64px; }
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .time-card {
+      background: var(--white);
+      border: 1px solid var(--cream-dk);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      transition: box-shadow .25s, transform .25s;
+    }
+    .time-card:hover { box-shadow: 0 12px 48px rgba(0,0,0,.08); transform: translateY(-4px); }
+    .time-card-role {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .time-card-name {
+      font-family: var(--ff-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--navy-deep);
+      margin-bottom: 12px;
+    }
+    .time-card-desc {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-lt);
+    }
+    .time-card.featured {
+      background: var(--navy);
+      border-color: var(--navy);
+      grid-column: span 1;
+    }
+    .time-card.featured .time-card-name { color: var(--white); }
+    .time-card.featured .time-card-desc { color: rgba(255,255,255,.55); }
+    .time-card.featured .time-card-role { color: var(--gold-lt); }
+    .time-dots {
+      display: flex; gap: 4px; margin-bottom: 20px;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); opacity: .4; }
+    .dot.active { opacity: 1; }
+
+    /* ─── RESULTADOS ─────────────────────────────────────────── */
+    #resultados {
+      padding: var(--gap) 0;
+      background: var(--navy-deep);
+      position: relative;
+      overflow: hidden;
+    }
+    #resultados::before {
+      content: '50M+';
+      position: absolute;
+      right: -2%; top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--ff-display);
+      font-size: clamp(120px, 20vw, 240px);
+      font-weight: 700;
+      color: rgba(255,255,255,.02);
+      line-height: 1;
+      pointer-events: none;
+    }
+    .res-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .res-left .section-title { color: var(--white); }
+    .res-left .section-lead { color: rgba(255,255,255,.6); }
+    .res-number {
+      font-family: var(--ff-display);
+      font-size: clamp(56px, 8vw, 96px);
+      font-weight: 400;
+      color: var(--gold);
+      line-height: 1;
+      margin: 40px 0 12px;
+    }
+    .res-number-label {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.45);
+      text-transform: uppercase;
+    }
+    /* ─── WA CAROUSEL ───────────────────────────────────────── */
+    .res-right { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .wa-carousel { width: 100%; max-width: 380px; }
+    .wa-slides { position: relative; }
+    .wa-slide { display: none; }
+    .wa-slide.active { display: block; animation: waFadeIn .5s ease; }
+    @keyframes waFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* phone frame */
+    .wa-phone {
+      background: #ECE5DD;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+    }
+    /* header */
+    .wa-header {
+      background: #075E54;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wa-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: grid; place-items: center;
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: -.02em;
+      overflow: hidden;
+    }
+    .wa-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+    .wa-contact { flex: 1; min-width: 0; }
+    .wa-contact-name {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wa-contact-status {
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      color: rgba(255,255,255,.65);
+    }
+    .wa-icons { display: flex; gap: 18px; color: rgba(255,255,255,.85); }
+    .wa-icons svg { width: 20px; height: 20px; }
+
+    /* chat body */
+    .wa-body {
+      padding: 16px 14px 20px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 6px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%23ddd6cc'/%3E%3C/svg%3E");
+      background-size: 60px;
+      background-color: #ECE5DD;
+    }
+    /* timestamp pill */
+    .wa-day-pill {
+      align-self: center;
+      background: rgba(225,217,207,.9);
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      color: #54656F;
+      margin-bottom: 4px;
+    }
+    /* received bubble */
+    .wa-bubble {
+      background: #fff;
+      border-radius: 0 10px 10px 10px;
+      padding: 8px 12px 6px;
+      max-width: 88%;
+      align-self: flex-start;
+      position: relative;
+      box-shadow: 0 1px 1px rgba(0,0,0,.12);
+    }
+    .wa-bubble::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -7px;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 0 8px 8px 0;
+      border-color: transparent #fff transparent transparent;
+    }
+    .wa-bubble-text {
+      font-family: var(--ff-sans);
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #111;
+    }
+    .wa-bubble-meta {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 3px;
+      margin-top: 3px;
+    }
+    .wa-bubble-time {
+      font-family: var(--ff-sans);
+      font-size: 10.5px;
+      color: #8696A0;
+    }
+
+    /* progress bars */
+    .wa-progress {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .wa-prog-bar {
+      flex: 1;
+      height: 2px;
+      background: rgba(255,255,255,.15);
+      border-radius: 2px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .wa-prog-fill {
+      height: 100%;
+      background: var(--gold);
+      width: 0%;
+      transition: width linear;
+    }
+
+    /* ─── CTA ────────────────────────────────────────────────── */
+    #cta {
+      padding: var(--gap) 0;
+      background: var(--cream);
+    }
+    .cta-box {
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: clamp(56px, 8vw, 96px) clamp(40px, 6vw, 96px);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(184,148,104,.12) 0%, transparent 70%);
+    }
+    .cta-box .section-title { color: var(--white); margin-bottom: 20px; }
+    .cta-box .section-lead { color: rgba(255,255,255,.6); margin-inline: auto; text-align: center; margin-bottom: 40px; }
+    .cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .cta-note {
+      margin-top: 24px;
+      font-size: 12px;
+      color: rgba(255,255,255,.3);
+      letter-spacing: .06em;
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--navy-deep);
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding: 48px 0 32px;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .footer-logo {
+      font-family: var(--ff-display);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--white);
+    }
+    .footer-logo span { color: var(--gold); }
+    .footer-tagline {
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.3);
+      margin-top: 4px;
+    }
+    .footer-links {
+      display: flex; gap: 32px; list-style: none;
+    }
+    .footer-links a {
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.4);
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-copy {
+      width: 100%;
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,.05);
+      font-size: 12px;
+      color: rgba(255,255,255,.2);
+    }
+
+    /* ─── PROJETOS ──────────────────────────────────────────── */
+    #projetos {
+      background: var(--navy);
+      padding-block: var(--gap);
+    }
+    #projetos .section-title,
+    #projetos .section-lead { color: var(--white); }
+    #projetos .section-lead { color: rgba(255,255,255,.6); }
+    .proj-header { text-align: center; margin-bottom: 64px; }
+
+    .proj-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .proj-card {
+      background: var(--navy-deep);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+      transition: background .25s;
+      display: flex;
+      flex-direction: column;
+    }
+    .proj-img {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      filter: brightness(.92);
+      transition: filter .3s, transform .4s;
+    }
+    .proj-card:hover .proj-img {
+      filter: brightness(1);
+      transform: scale(1.02);
+    }
+    .proj-body {
+      padding: 28px 32px 32px;
+      flex: 1;
+    }
+    .proj-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(184,148,104,.06) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .proj-card:hover { background: #1a2d3f; }
+    .proj-card:hover::before { opacity: 1; }
+    .proj-tag {
+      display: inline-block;
+      font-family: var(--ff-sans);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(184,148,104,.35);
+      border-radius: 2px;
+      padding: 4px 10px;
+      margin-bottom: 24px;
+    }
+    .proj-name {
+      font-family: var(--ff-display);
+      font-size: clamp(18px, 1.8vw, 22px);
+      font-weight: 500;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .proj-specialty {
+      font-family: var(--ff-serif);
+      font-size: clamp(16px, 1.6vw, 20px);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold-lt);
+      margin-bottom: 20px;
+    }
+    .proj-divider {
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+      margin-bottom: 20px;
+    }
+    .proj-desc {
+      font-family: var(--ff-sans);
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: rgba(255,255,255,.55);
+    }
+    .proj-number {
+      margin-top: 24px;
+      font-family: var(--ff-display);
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: .02em;
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .hero-stats .stat-item:last-child { grid-column: span 2; }
+      .sobre-grid, .pq-inner, .res-inner { grid-template-columns: 1fr; gap: 48px; }
+      .sobre-badge { display: none; }
+      .filo-grid { grid-template-columns: 1fr; }
+      .frente-item { grid-template-columns: 1fr; gap: 16px; }
+      .frente-num { display: none; }
+      .time-grid { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+      .pq-right { grid-template-columns: 1fr; }
+      .proj-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .hero-stats { grid-template-columns: 1fr; }
+      .hero-stats .stat-item:last-child { grid-column: span 1; }
+      .time-grid { grid-template-columns: 1fr; }
+      .proj-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container nav-inner">
+      <div class="nav-logo"><span>Geller</span> Group</div>
+      <ul class="nav-links">
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#frentes">Soluções</a></li>
+        <li><a href="#time">Time</a></li>
+        <li><a href="#projetos">Projetos</a></li>
+        <li><a href="#resultados">Resultados</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="#cta" class="btn btn-gold">Falar com a equipe</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─────────────────────────────────────── -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <p class="hero-label">Estratégia Digital &amp; Coprodução</p>
+      <h1 class="hero-title">
+        Somos a operação por trás<br>
+        de especialistas que <em>crescem<br>
+        de verdade</em> no digital.
+      </h1>
+      <p class="hero-sub">
+        Médicos, advogados, dentistas — profissionais que já tinham
+        autoridade no presencial e precisavam de estrutura para transformar
+        isso em resultado digital. É aí que entramos.
+      </p>
+      <div class="hero-actions">
+        <a href="#cta" class="btn btn-gold">Quero uma operação profissional</a>
+        <a href="#frentes" class="btn btn-outline">Conhecer as soluções</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">R$ 50M+</div>
+          <div class="stat-label">Gerados em coprodução e funis</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">200+</div>
+          <div class="stat-label">Funis estruturados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">8</div>
+          <div class="stat-label">Especialistas no time</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SOBRE ─────────────────────────────────────── -->
+  <section id="sobre">
+    <div class="container">
+      <div class="sobre-grid">
+        <div class="sobre-text">
+          <span class="tag">Quem somos</span>
+          <h2 class="section-title">Nós somos a<br><em>Geller Group.</em></h2>
+          <div class="divider"></div>
+          <p class="section-lead">
+            Uma operação estratégica digital fundada pela Rebeca Geller, especializada
+            em posicionar, lançar e escalar especialistas — tanto no digital quanto
+            no consultório e no escritório.
+          </p>
+          <p class="section-lead" style="margin-top:20px;">
+            Nosso modelo de atuação é pensado para o longo prazo, com dedicação
+            intensa, unindo inteligência de mercado, execução de ponta e
+            acompanhamento estratégico.
+          </p>
+          <p class="section-lead" style="margin-top:20px; font-style:italic; color: var(--navy);">
+            Esse não é um modelo para quem busca atalhos. É para quem entende que,
+            para crescer no digital, é necessário estrutura, investimento e visão de negócio.
+          </p>
+        </div>
+        <div class="sobre-visual">
+          <div class="sobre-card-bg">
+            <p class="sobre-card-quote">
+              "Crescer no digital não deveria depender de sorte. Mas sim de
+              <strong>estratégia, estrutura, execução e posicionamento.</strong>"
+            </p>
+            <div class="sobre-card-author">
+              <div class="author-dot">R</div>
+              <div class="author-info">
+                <p>Rebeca Geller</p>
+                <p>Co-Founder &amp; Estrategista Digital</p>
+              </div>
+            </div>
+          </div>
+          <div class="sobre-badge">
+            <div class="sobre-badge-num">200+</div>
+            <div class="sobre-badge-txt">Funis<br>desenvolvidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FILOSOFIA ─────────────────────────────────── -->
+  <section id="filosofia">
+    <div class="container">
+      <div class="filo-header">
+        <span class="tag">Nossa operação</span>
+        <h2 class="section-title" style="color:var(--white);">Como funciona nossa operação</h2>
+        <div class="divider" style="margin:28px auto;"></div>
+        <p class="section-lead">Porque especialista bom, sem operação, continua limitado ao próprio tempo.</p>
+      </div>
+      <div class="filo-grid">
+        <div class="filo-card">
+          <div class="filo-card-num">01</div>
+          <div class="filo-card-bar"></div>
+          <h3 class="filo-card-title">Estratégia</h3>
+          <p class="filo-card-text">
+            Cada projeto começa com pesquisa de mercado, definição de persona e
+            mapeamento da esteira. Nenhuma ação antes do diagnóstico.
+          </p>
+        </div>
+        <div class="filo-card">
+          <div class="filo-card-num">02</div>
+          <div class="filo-card-bar"></div>
+          <h3 class="filo-card-title">Estrutura</h3>
+          <p class="filo-card-text">
+            Funis, páginas, automações, plataformas e criativos — montados e
+            operando antes do primeiro real investido em tráfego.
+          </p>
+        </div>
+        <div class="filo-card">
+          <div class="filo-card-num">03</div>
+          <div class="filo-card-bar"></div>
+          <h3 class="filo-card-title">Execução</h3>
+          <p class="filo-card-text">
+            Um time de 8 profissionais dedicados a cada detalhe enquanto você
+            cuida dos seus pacientes e clientes.
+          </p>
+        </div>
+        <div class="filo-card">
+          <div class="filo-card-num">04</div>
+          <div class="filo-card-bar"></div>
+          <h3 class="filo-card-title">Posicionamento</h3>
+          <p class="filo-card-text">
+            Autoridade construída com consistência: conteúdo estratégico, big idea
+            forte e diferenciação clara frente à concorrência.
+          </p>
+        </div>
+        <div class="filo-card">
+          <div class="filo-card-num">05</div>
+          <div class="filo-card-bar"></div>
+          <h3 class="filo-card-title">Performance</h3>
+          <p class="filo-card-text">
+            Relatórios semanais, dashboards de LTV/CAC/ROAS e reuniões
+            estratégicas mensais. Decisões guiadas por dados, não por intuição.
+          </p>
+        </div>
+        <div class="filo-card">
+          <div class="filo-card-num">06</div>
+          <div class="filo-card-bar"></div>
+          <h3 class="filo-card-title">Escala</h3>
+          <p class="filo-card-text">
+            Perpétuos que vendem no automático, lançamentos com ciclos previsíveis
+            e, quando for a hora, expansão para mercados de moeda forte.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FRENTES ───────────────────────────────────── -->
+  <section id="frentes">
+    <div class="container">
+      <div class="frentes-header">
+        <span class="tag">Nossas soluções</span>
+        <h2 class="section-title">Você escolhe o caminho.<br><em>A gente constrói a operação.</em></h2>
+        <div class="divider"></div>
+        <p class="section-lead">
+          Atuamos em três frentes estratégicas que se complementam e se
+          adaptam ao seu momento de negócio.
+        </p>
+      </div>
+      <div class="frentes-list">
+
+        <!-- FUNIL DE PACIENTES -->
+        <div class="frente-item">
+          <div class="frente-num">01 /</div>
+          <div class="frente-info">
+            <h3 class="frente-title">Funil de<br><em>pacientes</em></h3>
+          </div>
+          <div>
+            <p class="frente-obj">Objetivo</p>
+            <ul class="frente-list">
+              <li>Estruturar um funil de aquisição de pacientes escalável e previsível</li>
+              <li>Posicionar sua clínica como autoridade no digital e atrair o público certo</li>
+              <li>Campanhas de tráfego pago (Meta Ads + Google Ads) otimizadas para conversão</li>
+              <li>Criação de páginas e criativos</li>
+              <li>Fluxo constante de agendamentos qualificados via automação e nutrição de leads</li>
+              <li>Relatórios semanais, análise de métricas avançadas e reunião estratégica mensal</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- COPRODUÇÃO -->
+        <div class="frente-item">
+          <div class="frente-num">02 /</div>
+          <div class="frente-info">
+            <h3 class="frente-title">Coprodução de<br><em>infoprodutos</em></h3>
+          </div>
+          <div>
+            <p class="frente-obj">Objetivo</p>
+            <ul class="frente-list">
+              <li>Estruturar uma operação digital escalável e sólida</li>
+              <li>Desenvolver esteira de produtos com foco em monetização de médio e longo prazo</li>
+              <li>Criar funis perpétuos que vendem 24/7 enquanto qualificam leads para lançamentos maiores</li>
+              <li>Criação e validação da big idea, páginas, criativos, produtos e fluxos de automação</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FUNIL INTERNACIONAL -->
+        <div class="frente-item">
+          <div class="frente-num">03 /</div>
+          <div class="frente-info">
+            <h3 class="frente-title">Funil<br><em>internacional</em></h3>
+          </div>
+          <div>
+            <p class="frente-obj">Objetivo</p>
+            <ul class="frente-list">
+              <li>Estruturar operação digital escalável no exterior</li>
+              <li>Conduzir do mercado brasileiro para mercados de moeda forte</li>
+              <li>Tradução e dublagem do curso completo via IA — sua voz, no idioma internacional</li>
+              <li>Copy de vendas localizada, criativos e funil evergreen no exterior</li>
+              <li>Pesquisa de mercado, persona local e precificação em USD/EUR</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PARA QUEM ─────────────────────────────────── -->
+  <section id="para-quem">
+    <div class="container">
+      <div class="pq-inner">
+        <div class="pq-left">
+          <span class="tag">Para quem é</span>
+          <h2 class="section-title" style="color:var(--white);">
+            Especialistas que<br><em>querem mais</em>
+          </h2>
+          <div class="divider"></div>
+          <p class="section-lead" style="color:rgba(255,255,255,.6);">
+            Nosso foco são médicos, advogados, dentistas que já têm autoridade,
+            e querem transformá-la em resultado digital real.
+          </p>
+          <ul class="pq-list">
+            <li>
+              <div class="pq-arrow">→</div>
+              <p class="pq-list-text">Ter na agenda pacientes e clientes que pagam alto pelos seus serviços</p>
+            </li>
+            <li>
+              <div class="pq-arrow">→</div>
+              <p class="pq-list-text">Parar de depender só do boca a boca</p>
+            </li>
+            <li>
+              <div class="pq-arrow">→</div>
+              <p class="pq-list-text">Lançar mentorias e cursos e faturar além do presencial</p>
+            </li>
+            <li>
+              <div class="pq-arrow">→</div>
+              <p class="pq-list-text">Escalar para o mercado internacional e ganhar em moeda forte</p>
+            </li>
+            <li>
+              <div class="pq-arrow">→</div>
+              <p class="pq-list-text">Ter uma operação profissional rodando por eles</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TIME ─────────────────────────────────────── -->
+  <section id="time">
+    <div class="container">
+      <div class="time-header">
+        <span class="tag">Nosso time</span>
+        <h2 class="section-title">Ninguém cresce <em>sozinho.</em></h2>
+        <div class="divider" style="margin:28px auto;"></div>
+        <p class="section-lead" style="margin-inline:auto; text-align:center;">
+          Por trás de cada projeto, existe um time completo cuidando de cada detalhe
+          enquanto o especialista foca no que faz melhor.
+        </p>
+      </div>
+      <div class="time-grid">
+
+        <!-- Rebeca — featured -->
+        <div class="time-card featured">
+          <div class="time-dots"><div class="dot active"></div><div class="dot active"></div><div class="dot"></div></div>
+          <p class="time-card-role">Estrategista, Mentora &amp; Co-Fundadora</p>
+          <h3 class="time-card-name">Rebeca Geller</h3>
+          <p class="time-card-desc">Idealizadora da operação. Estrategista digital e mentora de especialistas, com mais de 200 funis estruturados e R$50M+ em faturamento gerado.</p>
+        </div>
+
+        <!-- Estratégia + IA -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot active"></div><div class="dot"></div></div>
+          <p class="time-card-role">Estratégia, Copy &amp; Inteligência Artificial</p>
+          <p class="time-card-desc">Posicionamento de mercado, copy persuasivo e implementação de IA aplicada ao marketing digital. Especialista nos nichos médico e jurídico.</p>
+        </div>
+
+        <!-- Operações -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <p class="time-card-role">Head de Operações</p>
+          <p class="time-card-desc">Responsável por estruturar e gerenciar os processos da operação — garantindo que cada projeto seja entregue no prazo e com qualidade.</p>
+        </div>
+
+        <!-- Tráfego -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <p class="time-card-role">Gestão de Tráfego Pago</p>
+          <p class="time-card-desc">Especialista em funis de lançamento e perpétuo. Mais de R$10M gerados em campanhas para experts nos nichos de saúde e educação.</p>
+        </div>
+
+        <!-- Copy saúde -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <p class="time-card-role">Copywriting — Saúde &amp; Medicina</p>
+          <p class="time-card-desc">Especialista em copy para nichos médicos. Responsável por dezenas de campanhas de 6 dígitos em lançamentos e funis de pacientes.</p>
+        </div>
+
+        <!-- TI & IA corporativa -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <p class="time-card-role">Tecnologia &amp; IA Corporativa</p>
+          <p class="time-card-desc">Implementação de soluções de inteligência artificial para otimizar processos e escalar operações. Experiência em grandes corporações nacionais e multinacionais.</p>
+        </div>
+
+        <!-- Design -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <p class="time-card-role">Design &amp; Identidade Visual</p>
+          <p class="time-card-desc">Mais de 5 anos no mercado digital. Responsável pelos criativos de campanha, materiais de marca e identidade visual dos projetos.</p>
+        </div>
+
+        <!-- Vídeo -->
+        <div class="time-card">
+          <div class="time-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <p class="time-card-role">Edição &amp; Produção de Vídeo</p>
+          <p class="time-card-desc">Foco em performance e conversão. Responsável por criativos em vídeo para tráfego pago, reels de autoridade e conteúdo orgânico.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PROJETOS ────────────────────────────────────── -->
+  <section id="projetos">
+    <div class="container">
+      <div class="proj-header">
+        <span class="tag" style="background:rgba(184,148,104,.15); color:var(--gold); border-color:rgba(184,148,104,.4);">Nossa produção</span>
+        <h2 class="section-title" style="color:var(--white); margin-top:20px;">Conheça alguns de <em>nossos projetos</em></h2>
+        <div class="divider" style="margin:28px auto;"></div>
+        <p class="section-lead" style="color:rgba(255,255,255,.55); margin-inline:auto; text-align:center;">
+          Especialistas de diferentes nichos que decidiram construir uma operação digital séria.
+        </p>
+      </div>
+      <div class="proj-grid">
+
+        <div class="proj-card">
+          <img class="proj-img" src="proj-bocalon.jpg.png" alt="Dr. Diego Bocalon">
+          <div class="proj-body">
+            <span class="proj-tag">Coprodução + Funil de Pacientes</span>
+            <p class="proj-name">Dr. Diego Bocalon</p>
+            <p class="proj-specialty">Implantodontista</p>
+            <div class="proj-divider"></div>
+            <p class="proj-desc">Estratégia de posicionamento para o especialista em maxilas atróficas e zigomáticos se tornar referência nacional, combinando funil de pacientes de alto ticket com coprodução de infoproduto.</p>
+          </div>
+        </div>
+
+        <div class="proj-card">
+          <img class="proj-img" src="proj-daniane.jpg.png" alt="Dra. Daniane Rafael">
+          <div class="proj-body">
+            <span class="proj-tag">Coprodução de Infoproduto</span>
+            <p class="proj-name">Dra. Daniane Rafael</p>
+            <p class="proj-specialty">Ecocardiografia</p>
+            <div class="proj-divider"></div>
+            <p class="proj-desc">Desenvolvimento completo do produto "Imersão avançada em Eco Transesofágico" — da big idea à página de vendas e lançamento para médicos cardiologistas de todo o Brasil.</p>
+            <p class="proj-number">9.346 seguidores</p>
+          </div>
+        </div>
+
+        <div class="proj-card">
+          <img class="proj-img" src="proj-mariana.jpg.png" alt="Dra. Mariana Georges">
+          <div class="proj-body">
+            <span class="proj-tag">Coprodução Internacional</span>
+            <p class="proj-name">Dra. Mariana Georges</p>
+            <p class="proj-specialty">Mentora de Médicos</p>
+            <div class="proj-divider"></div>
+            <p class="proj-desc">Estruturação do Georges Method e expansão global — ecossistema digital com funil de pacientes, cursos e consultoria Going Global para médicos injetores de alto nível.</p>
+            <p class="proj-number">120 mil seguidores</p>
+          </div>
+        </div>
+
+        <div class="proj-card">
+          <img class="proj-img" src="proj-giovanna.jpg.png" alt="Giovanna Paino">
+          <div class="proj-body">
+            <span class="proj-tag">Coprodução de Infoproduto</span>
+            <p class="proj-name">Giovanna Paino</p>
+            <p class="proj-specialty">Emagrecimento</p>
+            <div class="proj-divider"></div>
+            <p class="proj-desc">Criação e lançamento do método de emagrecimento sem dietas restritivas — funil de webinário, campanha de tráfego e comunidade com mais de 2.000 alunas ativas.</p>
+            <p class="proj-number">132 mil seguidores</p>
+          </div>
+        </div>
+
+        <div class="proj-card">
+          <img class="proj-img" src="proj-sandra.jpg.png" alt="Sandra Scalco">
+          <div class="proj-body">
+            <span class="proj-tag">Coprodução de Infoproduto</span>
+            <p class="proj-name">Sandra Scalco</p>
+            <p class="proj-specialty">Ginecologista e Sexóloga</p>
+            <div class="proj-divider"></div>
+            <p class="proj-desc">Desenvolvimento do GSA — Grupo de Supervisão Avançada em S3xualidade — posicionando a Dra. Sandra como referência nacional em saúde sexual com metodologia científica.</p>
+            <p class="proj-number">19,6 mil seguidores</p>
+          </div>
+        </div>
+
+        <div class="proj-card">
+          <img class="proj-img" src="proj-ana-jordana.jpg.png" alt="Ana e Jordana">
+          <div class="proj-body">
+            <span class="proj-tag">Coprodução de Infoproduto</span>
+            <p class="proj-name">Ana e Jordana</p>
+            <p class="proj-specialty">Neonatologia</p>
+            <div class="proj-divider"></div>
+            <p class="proj-desc">Lançamento do curso TORCHS para médicos e residentes — do zero à autoridade em neonatologia, com funil de vendas, página de alto impacto e estratégia de conteúdo educativo.</p>
+            <p class="proj-number">7.679 seguidores</p>
+          </div>
+        </div>
+
+      </div><!-- /proj-grid -->
+    </div>
+  </section>
+
+  <!-- ─── RESULTADOS ────────────────────────────────── -->
+  <section id="resultados">
+    <div class="container">
+      <div class="res-inner">
+        <div class="res-left">
+          <span class="tag">Resultados</span>
+          <h2 class="section-title" style="color:var(--white);">
+            O que a gente aprendeu<br>com <em>R$ 50 milhões</em>
+          </h2>
+          <div class="divider"></div>
+          <p class="section-lead" style="color:rgba(255,255,255,.6);">
+            Especialista com a estrutura digital certa escala o faturamento —
+            seja pelo consultório, pelo digital, ou pelos dois ao mesmo tempo.
+          </p>
+        </div>
+        <div class="res-right">
+          <div class="wa-carousel" id="waCarousel">
+
+            <div class="wa-slides">
+
+              <!-- Slide 1 — Dr. Diego Bocalon -->
+              <div class="wa-slide active">
+                <div class="wa-phone">
+                  <div class="wa-header">
+                    <div class="wa-avatar"><img src="proj-bocalon.jpg.png" alt="Dr. Diego Bocalon"></div>
+                    <div class="wa-contact">
+                      <div class="wa-contact-name">Dr. Diego Bocalon</div>
+                      <div class="wa-contact-status">online</div>
+                    </div>
+                    <div class="wa-icons">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                    </div>
+                  </div>
+                  <div class="wa-body">
+                    <div class="wa-day-pill">hoje</div>
+                    <div class="wa-bubble">
+                      <div class="wa-bubble-text">Quase 400 mil de ganhos como produtor/coprodutor. Quase o valor que lucro com 1 ano de consultório. 🙏</div>
+                      <div class="wa-bubble-meta">
+                        <span class="wa-bubble-time">09:47</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 2 — Dra. Daniane Rafael -->
+              <div class="wa-slide">
+                <div class="wa-phone">
+                  <div class="wa-header">
+                    <div class="wa-avatar"><img src="proj-daniane.jpg.png" alt="Dra. Daniane Rafael"></div>
+                    <div class="wa-contact">
+                      <div class="wa-contact-name">Dra. Daniane Rafael</div>
+                      <div class="wa-contact-status">online</div>
+                    </div>
+                    <div class="wa-icons">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                    </div>
+                  </div>
+                  <div class="wa-body">
+                    <div class="wa-day-pill">hoje</div>
+                    <div class="wa-bubble">
+                      <div class="wa-bubble-text">Saldo do fechamento de carrinho ontem: R$171.908,11. Já me mande o 2° contrato. 😂🔥</div>
+                      <div class="wa-bubble-meta">
+                        <span class="wa-bubble-time">14:23</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 3 — Dra. Mariana Georges -->
+              <div class="wa-slide">
+                <div class="wa-phone">
+                  <div class="wa-header">
+                    <div class="wa-avatar"><img src="proj-mariana.jpg.png" alt="Dra. Mariana Georges"></div>
+                    <div class="wa-contact">
+                      <div class="wa-contact-name">Dra. Mariana Georges</div>
+                      <div class="wa-contact-status">online</div>
+                    </div>
+                    <div class="wa-icons">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                    </div>
+                  </div>
+                  <div class="wa-body">
+                    <div class="wa-day-pill">hoje</div>
+                    <div class="wa-bubble">
+                      <div class="wa-bubble-text">Mais de 150 mil em 7 dias. Só conseguimos pq confiei no processo e fiz absolutamente tudo que você orientou desde o primeiro contrato. ❤️</div>
+                      <div class="wa-bubble-meta">
+                        <span class="wa-bubble-time">21:08</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 4 — Giovanna Paino -->
+              <div class="wa-slide">
+                <div class="wa-phone">
+                  <div class="wa-header">
+                    <div class="wa-avatar"><img src="proj-giovanna.jpg.png" alt="Giovanna Paino"></div>
+                    <div class="wa-contact">
+                      <div class="wa-contact-name">Giovanna Paino</div>
+                      <div class="wa-contact-status">online</div>
+                    </div>
+                    <div class="wa-icons">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                    </div>
+                  </div>
+                  <div class="wa-body">
+                    <div class="wa-day-pill">hoje</div>
+                    <div class="wa-bubble">
+                      <div class="wa-bubble-text">2.000 alunas ativas e o método funcionando sozinho. Nunca imaginei escalar assim sem abrir mão da minha essência. 🙌</div>
+                      <div class="wa-bubble-meta">
+                        <span class="wa-bubble-time">11:32</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 5 — Sandra Scalco -->
+              <div class="wa-slide">
+                <div class="wa-phone">
+                  <div class="wa-header">
+                    <div class="wa-avatar"><img src="proj-sandra.jpg.png" alt="Sandra Scalco"></div>
+                    <div class="wa-contact">
+                      <div class="wa-contact-name">Sandra Scalco</div>
+                      <div class="wa-contact-status">online</div>
+                    </div>
+                    <div class="wa-icons">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                    </div>
+                  </div>
+                  <div class="wa-body">
+                    <div class="wa-day-pill">hoje</div>
+                    <div class="wa-bubble">
+                      <div class="wa-bubble-text">O GSA virou referência nacional. Consultório e digital andando juntos — coisa que eu achava impossível antes. ❤️</div>
+                      <div class="wa-bubble-meta">
+                        <span class="wa-bubble-time">18:55</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 6 — Ana e Jordana -->
+              <div class="wa-slide">
+                <div class="wa-phone">
+                  <div class="wa-header">
+                    <div class="wa-avatar"><img src="proj-ana-jordana.jpg.png" alt="Ana e Jordana"></div>
+                    <div class="wa-contact">
+                      <div class="wa-contact-name">Ana e Jordana</div>
+                      <div class="wa-contact-status">online</div>
+                    </div>
+                    <div class="wa-icons">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                    </div>
+                  </div>
+                  <div class="wa-body">
+                    <div class="wa-day-pill">hoje</div>
+                    <div class="wa-bubble">
+                      <div class="wa-bubble-text">Do zero à autoridade em neonatologia. A página e a estratégia de conteúdo superaram todas as expectativas. 🔥</div>
+                      <div class="wa-bubble-meta">
+                        <span class="wa-bubble-time">16:14</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /wa-slides -->
+
+            <!-- Progress bars -->
+            <div class="wa-progress" id="waProgress">
+              <div class="wa-prog-bar active"><div class="wa-prog-fill" id="waFill0"></div></div>
+              <div class="wa-prog-bar"><div class="wa-prog-fill" id="waFill1"></div></div>
+              <div class="wa-prog-bar"><div class="wa-prog-fill" id="waFill2"></div></div>
+              <div class="wa-prog-bar"><div class="wa-prog-fill" id="waFill3"></div></div>
+              <div class="wa-prog-bar"><div class="wa-prog-fill" id="waFill4"></div></div>
+              <div class="wa-prog-bar"><div class="wa-prog-fill" id="waFill5"></div></div>
+            </div>
+
+          </div><!-- /wa-carousel -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ──────────────────────────────────────── -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-box">
+        <span class="tag" style="display:block; margin-bottom:20px;">Próximo passo</span>
+        <h2 class="section-title" style="color:var(--white);">
+          Seja bem-vindo à<br><em>Geller Group.</em>
+        </h2>
+        <p class="section-lead" style="color:rgba(255,255,255,.6); margin-top:20px; margin-bottom:40px;">
+          Se você é especialista e quer ter uma operação digital profissional
+          gerando resultado pra você — a gente está pronto para isso.
+        </p>
+        <div class="cta-actions">
+          <a href="#" class="btn btn-gold">Quero falar com a equipe</a>
+          <a href="#frentes" class="btn btn-outline">Ver as soluções</a>
+        </div>
+        <p class="cta-note">Validade da proposta — 7 dias · Vagas limitadas por ciclo</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-logo"><span>Geller</span> Group</div>
+          <p class="footer-tagline">Estratégia Digital &amp; Coprodução</p>
+        </div>
+        <ul class="footer-links">
+          <li><a href="#sobre">Sobre</a></li>
+          <li><a href="#frentes">Soluções</a></li>
+          <li><a href="#time">Time</a></li>
+          <li><a href="#resultados">Resultados</a></li>
+          <li><a href="#cta">Contato</a></li>
+        </ul>
+      </div>
+      <p class="footer-copy">© 2026 Geller Group — Estratégia Digital &amp; Coprodução. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      const DURATION = 5000;
+      const slides   = document.querySelectorAll('.wa-slide');
+      const bars     = document.querySelectorAll('.wa-prog-bar');
+      const fills    = document.querySelectorAll('.wa-prog-fill');
+      const carousel = document.getElementById('waCarousel');
+      let current = 0;
+      let timer, fillTimer, startTime;
+
+      function goTo(idx){
+        slides[current].classList.remove('active');
+        bars[current].classList.remove('active');
+        fills[current].style.transition = 'none';
+        fills[current].style.width = '0%';
+
+        current = idx % slides.length;
+
+        slides[current].classList.add('active');
+        bars[current].classList.add('active');
+
+        // força reflow antes de iniciar animação
+        fills[current].getBoundingClientRect();
+        fills[current].style.transition = 'width ' + DURATION + 'ms linear';
+        fills[current].style.width = '100%';
+      }
+
+      function next(){ goTo((current + 1) % slides.length); }
+
+      function startAuto(){
+        clearInterval(timer);
+        timer = setInterval(next, DURATION);
+      }
+
+      // clicar na barra vai para aquele slide
+      bars.forEach((b, i) => {
+        b.addEventListener('click', () => {
+          goTo(i);
+          startAuto();
+        });
+      });
+
+      // pausa no hover
+      carousel.addEventListener('mouseenter', () => clearInterval(timer));
+      carousel.addEventListener('mouseleave', () => startAuto());
+
+      // inicia
+      fills[0].style.transition = 'width ' + DURATION + 'ms linear';
+      fills[0].style.width = '100%';
+      startAuto();
+    })();
+  </script>
+
+</body>
+</html>

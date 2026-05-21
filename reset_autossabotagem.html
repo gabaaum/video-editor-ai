@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset da Autossabotagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #1F2A20;
+      --green:   #3C4A3A;
+      --olive:   #66735A;
+      --beige:   #B7B09A;
+      --cream:   #F5F3EE;
+      --white:   #FFFFFF;
+      --ff-serif: 'Playfair Display', Georgia, serif;
+      --ff-sans:  'Inter', system-ui, sans-serif;
+      --gap: clamp(64px, 8vw, 112px);
+      --container: 760px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--black);
+      font-family: var(--ff-sans);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: var(--container);
+      margin-inline: auto;
+      padding-inline: 24px;
+    }
+
+    /* ── BOTÃO CTA ── */
+    .btn-cta {
+      display: inline-block;
+      background: var(--olive);
+      color: var(--cream);
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 18px 40px;
+      border-radius: 2px;
+      border: none;
+      cursor: pointer;
+      transition: background .2s, transform .15s;
+    }
+    .btn-cta:hover { background: var(--green); transform: translateY(-1px); }
+    .btn-cta-wrap { text-align: center; margin-top: 40px; }
+
+    /* ── DIVISOR ── */
+    .divider {
+      width: 40px;
+      height: 2px;
+      background: var(--olive);
+      margin: 28px auto;
+    }
+    .divider-left { margin-left: 0; }
+
+    /* ── SEÇÃO HERO ── */
+    #hero {
+      background: var(--black);
+      overflow: hidden;
+      position: relative;
+      height: clamp(560px, 78vh, 860px);
+    }
+    .hero-inner {
+      max-width: 1200px;
+      margin-inline: auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .hero-content {
+      padding-inline: clamp(28px, 6vw, 90px);
+      max-width: 580px;
+      position: relative;
+      z-index: 2;
+    }
+    .hero-label {
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--beige);
+      margin-bottom: 28px;
+    }
+    .hero-h1 {
+      font-family: var(--ff-serif);
+      font-size: clamp(30px, 3.6vw, 52px);
+      font-weight: 500;
+      color: var(--cream);
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+    .hero-h1 em {
+      font-style: italic;
+      color: var(--beige);
+    }
+    .hero-sub {
+      font-family: var(--ff-sans);
+      font-size: clamp(14px, 1.4vw, 16px);
+      font-weight: 300;
+      color: rgba(245,243,238,.62);
+      line-height: 1.85;
+      margin-top: 8px;
+      max-width: 440px;
+    }
+    .hero-cta-wrap { margin-top: 36px; }
+    .hero-photo-col {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 44%;
+    }
+    .hero-photo {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 28%);
+      mask-image: linear-gradient(to right, transparent 0%, black 28%);
+    }
+    @media (max-width: 860px) {
+      #hero { height: auto; }
+      .hero-inner { flex-direction: column; align-items: stretch; }
+      .hero-photo-col {
+        position: relative;
+        width: 100%;
+        height: 340px;
+        right: auto; top: auto; bottom: auto;
+      }
+      .hero-photo {
+        -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+      }
+      .hero-content { padding: 52px 24px 28px; max-width: 100%; }
+    }
+
+    /* ── SEÇÃO PRODUTO ── */
+    #produto {
+      background: var(--cream);
+      padding-block: var(--gap);
+      border-bottom: 1px solid rgba(102,115,90,.15);
+    }
+    .produto-text {
+      font-family: var(--ff-sans);
+      font-size: clamp(16px, 1.8vw, 18px);
+      color: var(--green);
+      line-height: 1.85;
+      text-align: center;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+    .produto-text strong {
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    /* ── IDENTIFICAÇÃO ── */
+    #identificacao {
+      background: var(--green);
+      padding-block: var(--gap);
+    }
+    .ident-intro {
+      font-family: var(--ff-serif);
+      font-size: clamp(22px, 3vw, 30px);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 36px;
+    }
+    .ident-list {
+      list-style: none;
+      margin-bottom: 36px;
+    }
+    .ident-list li {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: rgba(245,243,238,.8);
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(245,243,238,.1);
+      padding-left: 24px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .ident-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 22px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--beige);
+    }
+    .ident-list li:last-child { border-bottom: none; }
+    .ident-body {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: rgba(245,243,238,.75);
+      line-height: 1.8;
+    }
+    .ident-body p { margin-bottom: 16px; }
+    .ident-body p:last-child { margin-bottom: 0; }
+    .ident-body strong { color: var(--cream); font-weight: 500; }
+
+    /* ── AUTORIDADE ── */
+    #autoridade {
+      background: var(--cream);
+      padding-block: var(--gap);
+      border-bottom: 1px solid rgba(102,115,90,.15);
+    }
+    .autor-tag {
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--olive);
+      margin-bottom: 20px;
+    }
+    .autor-nome {
+      font-family: var(--ff-serif);
+      font-size: clamp(26px, 3.5vw, 38px);
+      font-weight: 500;
+      color: var(--black);
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .autor-desc {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: var(--green);
+      line-height: 1.8;
+      max-width: 580px;
+    }
+
+    /* ── DIFERENCIAL ── */
+    #diferencial {
+      background: var(--black);
+      padding-block: var(--gap);
+    }
+    .dif-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 500;
+      color: var(--cream);
+      line-height: 1.3;
+      margin-bottom: 24px;
+    }
+    .dif-body {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: rgba(245,243,238,.7);
+      line-height: 1.85;
+    }
+
+    /* ── CTA PRINCIPAL ── */
+    #cta1 {
+      background: var(--cream);
+      padding-block: var(--gap);
+      text-align: center;
+      border-top: 1px solid rgba(102,115,90,.15);
+      border-bottom: 1px solid rgba(102,115,90,.15);
+    }
+    .cta-headline {
+      font-family: var(--ff-serif);
+      font-size: clamp(24px, 3.5vw, 38px);
+      font-weight: 500;
+      color: var(--black);
+      line-height: 1.25;
+      margin-bottom: 20px;
+    }
+    .cta-urgencia {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: var(--green);
+      line-height: 1.8;
+      max-width: 560px;
+      margin-inline: auto;
+      margin-bottom: 8px;
+    }
+    .cta-urgencia p { margin-bottom: 16px; }
+    .cta-urgencia p:last-child { margin-bottom: 0; }
+
+    /* ── PROTOCOLO ── */
+    #protocolo {
+      background: var(--green);
+      padding-block: var(--gap);
+    }
+    .sec-label {
+      font-family: var(--ff-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--beige);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .sec-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(24px, 3.2vw, 36px);
+      font-weight: 500;
+      color: var(--cream);
+      text-align: center;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+    .sec-lead {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: rgba(245,243,238,.65);
+      text-align: center;
+      margin-bottom: 56px;
+      max-width: 540px;
+      margin-inline: auto;
+      line-height: 1.7;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-bottom: 48px;
+    }
+    .step-card {
+      background: rgba(245,243,238,.06);
+      padding: 36px 28px;
+    }
+    .step-num {
+      font-family: var(--ff-serif);
+      font-size: 42px;
+      font-weight: 400;
+      color: var(--beige);
+      opacity: .4;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .step-name {
+      font-family: var(--ff-serif);
+      font-size: 20px;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--cream);
+      margin-bottom: 12px;
+    }
+    .step-desc {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      color: rgba(245,243,238,.6);
+      line-height: 1.7;
+    }
+    .prot-footer {
+      font-family: var(--ff-sans);
+      font-size: 15px;
+      color: rgba(245,243,238,.6);
+      text-align: center;
+      line-height: 1.8;
+    }
+    .prot-footer strong { color: var(--cream); font-weight: 500; }
+
+    /* ── AGENTES IA ── */
+    #agentes {
+      background: var(--black);
+      padding-block: var(--gap);
+    }
+    .agentes-intro {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: rgba(245,243,238,.65);
+      text-align: center;
+      margin-bottom: 52px;
+      max-width: 520px;
+      margin-inline: auto;
+      line-height: 1.8;
+    }
+    .agentes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-bottom: 48px;
+    }
+    .agente-card {
+      background: rgba(245,243,238,.04);
+      border-top: 2px solid var(--olive);
+      padding: 32px 24px;
+    }
+    .agente-label {
+      font-family: var(--ff-sans);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--beige);
+      margin-bottom: 12px;
+    }
+    .agente-nome {
+      font-family: var(--ff-serif);
+      font-size: 18px;
+      font-style: italic;
+      color: var(--cream);
+      margin-bottom: 16px;
+    }
+    .agente-desc {
+      font-family: var(--ff-sans);
+      font-size: 13.5px;
+      color: rgba(245,243,238,.55);
+      line-height: 1.7;
+    }
+    .agentes-footer {
+      font-family: var(--ff-serif);
+      font-size: clamp(17px, 2vw, 21px);
+      font-style: italic;
+      color: rgba(245,243,238,.6);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .agentes-footer strong { color: var(--cream); font-style: normal; font-weight: 500; }
+
+    /* ── ENTREGÁVEIS ── */
+    #entregaveis {
+      background: var(--cream);
+      padding-block: var(--gap);
+      border-bottom: 1px solid rgba(102,115,90,.15);
+    }
+    .entreg-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 500;
+      color: var(--black);
+      margin-bottom: 36px;
+      text-align: center;
+    }
+    .entreg-list {
+      list-style: none;
+      max-width: 580px;
+      margin-inline: auto;
+      margin-bottom: 40px;
+    }
+    .entreg-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(102,115,90,.12);
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: var(--green);
+      line-height: 1.5;
+    }
+    .entreg-list li:last-child { border-bottom: none; }
+    .entreg-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--olive);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .entreg-check svg { width: 10px; height: 10px; }
+    .bonus-box {
+      background: var(--green);
+      padding: 32px;
+      border-radius: 2px;
+      max-width: 580px;
+      margin-inline: auto;
+    }
+    .bonus-label {
+      font-family: var(--ff-sans);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--beige);
+      margin-bottom: 12px;
+    }
+    .bonus-title {
+      font-family: var(--ff-serif);
+      font-size: 18px;
+      font-style: italic;
+      color: var(--cream);
+      margin-bottom: 12px;
+    }
+    .bonus-desc {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      color: rgba(245,243,238,.65);
+      line-height: 1.75;
+    }
+
+    /* ── CTA 2 ── */
+    #cta2 {
+      background: var(--olive);
+      padding-block: 64px;
+      text-align: center;
+    }
+
+    /* ── ANCORAGEM ── */
+    #preco {
+      background: var(--black);
+      padding-block: var(--gap);
+      text-align: center;
+    }
+    .preco-intro {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: rgba(245,243,238,.6);
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+    .preco-table {
+      max-width: 540px;
+      margin-inline: auto;
+      margin-bottom: 48px;
+    }
+    .preco-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(245,243,238,.07);
+      gap: 24px;
+    }
+    .preco-row:last-child { border-bottom: none; }
+    .preco-item {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      color: rgba(245,243,238,.55);
+      text-align: left;
+      flex: 1;
+    }
+    .preco-val {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      color: rgba(245,243,238,.35);
+      text-decoration: line-through;
+      white-space: nowrap;
+    }
+    .preco-total-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-top: 1px solid rgba(245,243,238,.15);
+      margin-top: 8px;
+    }
+    .preco-total-label {
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      color: rgba(245,243,238,.45);
+      letter-spacing: .05em;
+    }
+    .preco-total-val {
+      font-family: var(--ff-serif);
+      font-size: 20px;
+      color: rgba(245,243,238,.35);
+      text-decoration: line-through;
+    }
+    .preco-destaque {
+      margin-bottom: 48px;
+    }
+    .preco-destaque-label {
+      font-family: var(--ff-sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--beige);
+      margin-bottom: 12px;
+    }
+    .preco-destaque-desc {
+      font-family: var(--ff-sans);
+      font-size: 14px;
+      color: rgba(245,243,238,.5);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .preco-valor {
+      font-family: var(--ff-serif);
+      font-size: clamp(52px, 8vw, 80px);
+      font-weight: 500;
+      color: var(--cream);
+      line-height: 1;
+    }
+    .preco-valor span {
+      font-size: .4em;
+      vertical-align: super;
+      font-weight: 400;
+    }
+
+    /* ── GARANTIA ── */
+    #garantia {
+      background: var(--cream);
+      padding-block: var(--gap);
+      text-align: center;
+    }
+    .gar-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--green);
+      display: grid;
+      place-items: center;
+      margin-inline: auto;
+      margin-bottom: 24px;
+    }
+    .gar-icon svg { width: 28px; height: 28px; }
+    .gar-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 500;
+      color: var(--black);
+      margin-bottom: 20px;
+    }
+    .gar-desc {
+      font-family: var(--ff-sans);
+      font-size: clamp(15px, 1.7vw, 17px);
+      color: var(--green);
+      line-height: 1.85;
+      max-width: 540px;
+      margin-inline: auto;
+    }
+
+    /* ── CTA 3 ── */
+    #cta3 {
+      background: var(--green);
+      padding-block: 72px;
+      text-align: center;
+    }
+    .cta3-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 500;
+      font-style: italic;
+      color: var(--cream);
+      margin-bottom: 32px;
+      line-height: 1.25;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    footer p {
+      font-family: var(--ff-sans);
+      font-size: 12px;
+      color: rgba(245,243,238,.3);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .steps-grid, .agentes-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HERO ─────────────────────────────────────── -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <p class="hero-label">Reset da Autossabotagem</p>
+        <h1 class="hero-h1">
+          Você não é preguiçoso(a).<br>
+          <em>Seu cérebro só está obedecendo<br>uma memória antiga.</em>
+        </h1>
+        <div class="divider" style="background:var(--beige); opacity:.4; margin-left:0;"></div>
+        <p class="hero-sub">
+          O Reset da Autossabotagem é um protocolo online em 3 etapas,
+          baseado em neurociência, que vai atualizar a memória emocional
+          que faz você travar justamente quando decide mudar de vida.
+        </p>
+        <div class="hero-cta-wrap">
+          <a href="#cta3" class="btn-cta">Quero parar de me sabotar</a>
+        </div>
+      </div>
+      <div class="hero-photo-col">
+        <img class="hero-photo" src="marcos.png" alt="Marcos">
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRODUTO ───────────────────────────────────── -->
+  <section id="produto">
+    <div class="container">
+      <p class="produto-text">
+        Em <strong>8 aulas objetivas</strong>, <strong>3 Agentes de IA</strong> e <strong>1 encontro ao vivo</strong> comigo,
+        você vai sair do rótulo "eu sei o que fazer, mas não faço"
+        pra entender a cena exata em que seu cérebro aprendeu a te travar,
+        reconfigurar essa memória e instalar um novo padrão de ação no dia a dia.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── IDENTIFICAÇÃO ─────────────────────────────── -->
+  <section id="identificacao">
+    <div class="container">
+      <p class="ident-intro">Se isso soa familiar pra você:</p>
+      <ul class="ident-list">
+        <li>começa empolgado(a) e abandona no meio sem saber por quê.</li>
+        <li>Compra curso, começa animado(a), depois evita até abrir a plataforma.</li>
+        <li>já tentou planner, café e "vergonha na cara".</li>
+        <li>Promete que "segunda começa" e, quando vê, já é outro mês.</li>
+      </ul>
+      <div class="ident-body">
+        <p>e nada disso segurou o ritmo por mais de algumas semanas,</p>
+        <p>o problema não é falta de esforço.<br>
+        É uma <strong>memória desatualizada</strong> mandando no seu piloto automático.</p>
+        <p>Enquanto essa memória não for atualizada,<br>
+        qualquer técnica de produtividade vai bater no mesmo teto invisível.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── AUTORIDADE ────────────────────────────────── -->
+  <section id="autoridade">
+    <div class="container">
+      <p class="autor-tag">Quem fala isso</p>
+      <h2 class="autor-nome">Eu sou o Marcos,</h2>
+      <div class="divider divider-left"></div>
+      <p class="autor-desc">
+        psicólogo clínico em TCC, focado em neurociência, ansiedade,
+        procrastinação e autossabotagem.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── DIFERENCIAL ───────────────────────────────── -->
+  <section id="diferencial">
+    <div class="container">
+      <h2 class="dif-title">
+        Aqui você não recebe só conteúdo.
+      </h2>
+      <p class="dif-body">
+        Você conversa com Agentes de IA que reproduzem o raciocínio de consultório
+        pra aplicar o protocolo na sua vida, e depois discute os ajustes comigo,
+        ao vivo, no encontro de Reset.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── CTA PRINCIPAL ────────────────────────────── -->
+  <section id="cta1">
+    <div class="container">
+      <h2 class="cta-headline">
+        O padrão não para sozinho.<br>Ele se aprofunda.
+      </h2>
+      <div class="cta-urgencia">
+        <p>
+          Cada tentativa frustrada não é só um recomeço perdido, é mais uma prova que seu sistema nervoso registra que aquilo não é para você.
+        </p>
+        <p>
+          Daqui a dois anos você pode estar no mesmo lugar, com menos energia para tentar e menos confiança de que vale a pena.
+        </p>
+      </div>
+      <div class="btn-cta-wrap">
+        <a href="#cta3" class="btn-cta">Quero parar de me sabotar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PROTOCOLO 3 ETAPAS ───────────────────────── -->
+  <section id="protocolo">
+    <div class="container">
+      <p class="sec-label">O protocolo</p>
+      <h2 class="sec-title">No Reset da Autossabotagem,<br>eu traduzo a lógica em um passo a passo prático:</h2>
+      <div class="divider"></div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <p class="step-name">Descoberta</p>
+          <p class="step-desc">encontrar a memória que trava.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <p class="step-name">Reconfiguração</p>
+          <p class="step-desc">atualizar essa memória dentro do cérebro.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <p class="step-name">Consolidação</p>
+          <p class="step-desc">transformar essa nova memória em novo padrão de ação.</p>
+        </div>
+      </div>
+      <p class="prot-footer">
+        <strong>Nada de misticismo, nada de "segredo".</strong><br>
+        É mecanismo psicológico aplicado, com começo, meio e fim.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── AGENTES IA ────────────────────────────────── -->
+  <section id="agentes">
+    <div class="container">
+      <p class="sec-label" style="color:var(--beige);">Onde entram os Agentes de IA</p>
+      <h2 class="sec-title">Você não faz isso sozinho(a),<br>nem só com vídeo gravado.</h2>
+      <p class="agentes-intro"></p>
+      <div class="agentes-grid">
+        <div class="agente-card">
+          <p class="agente-label">Agente 1</p>
+          <p class="agente-nome">Descoberta</p>
+          <p class="agente-desc">te guia, com perguntas estruturadas, até a cena exata em que seu cérebro aprendeu a te travar.</p>
+        </div>
+        <div class="agente-card">
+          <p class="agente-label">Agente 2</p>
+          <p class="agente-nome">Reconfiguração</p>
+          <p class="agente-desc">conduz a reconfiguração dessa memória, criando uma nova experiência emocional dentro da mesma história.</p>
+        </div>
+        <div class="agente-card">
+          <p class="agente-label">Agente 3</p>
+          <p class="agente-nome">Consolidação</p>
+          <p class="agente-desc">te acompanha no dia a dia, ajudando a transformar essa nova memória em ação consistente.</p>
+        </div>
+      </div>
+      <p class="agentes-footer">
+        É como ter o <strong>raciocínio de consultório</strong><br>
+        disponível 24h, aplicado à sua vida real.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── ENTREGÁVEIS ───────────────────────────────── -->
+  <section id="entregaveis">
+    <div class="container">
+      <h2 class="entreg-title">O que você recebe</h2>
+      <ul class="entreg-list">
+        <li>
+          <span class="entreg-check">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#F5F3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          8 aulas objetivas em vídeo
+        </li>
+        <li>
+          <span class="entreg-check">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#F5F3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          3 Agentes de IA aplicados à sua vida real
+        </li>
+        <li>
+          <span class="entreg-check">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#F5F3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Acesso por 1 ano
+        </li>
+        <li>
+          <span class="entreg-check">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#F5F3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Encontro ao vivo de Reset (60 minutos)
+        </li>
+        <li>
+          <span class="entreg-check">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#F5F3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Mapa mental do protocolo
+        </li>
+      </ul>
+      <div class="bonus-box">
+        <p class="bonus-label">Bônus condicionado à implementação</p>
+        <p class="bonus-title">2 encontros 1:1 comigo</p>
+        <p class="bonus-desc">
+          Se você aplicar o protocolo, tirar um plano do papel
+          e seguir por pelo menos 4 semanas,
+          você libera 2 sessões individuais comigo,
+          com 30 dias de intervalo, pra refinar o que já mudou
+          e trabalhar pontos cegos que ainda estiverem te travando.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA 2 ──────────────────────────────────────── -->
+  <section id="cta2">
+    <div class="container">
+      <div class="btn-cta-wrap" style="margin-top:0;">
+        <a href="#cta3" class="btn-cta" style="background:var(--black); color:var(--cream);">Quero parar de me sabotar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ANCORAGEM DE VALOR ────────────────────────── -->
+  <section id="preco">
+    <div class="container">
+      <p class="sec-label">Ancoragem de valor</p>
+      <h2 class="sec-title" style="margin-bottom:16px;">Se você fosse buscar tudo isso separado:</h2>
+      <div class="divider"></div>
+      <div class="preco-table">
+        <div class="preco-row">
+          <p class="preco-item">Protocolo clínico em 3 etapas (8 aulas em vídeo, base em neurociência e TCC)</p>
+          <p class="preco-val">R$ 600</p>
+        </div>
+        <div class="preco-row">
+          <p class="preco-item">Acesso aos 3 Agentes de IA (Descoberta, Reconfiguração e Consolidação)</p>
+          <p class="preco-val">R$ 500</p>
+        </div>
+        <div class="preco-row">
+          <p class="preco-item">1 encontro ao vivo em grupo de 60 minutos comigo</p>
+          <p class="preco-val">R$ 200</p>
+        </div>
+        <div class="preco-row">
+          <p class="preco-item">Mapa mental guiando todo o processo, passo a passo</p>
+          <p class="preco-val">R$ 100</p>
+        </div>
+        <div class="preco-row">
+          <p class="preco-item">Bônus condicionado à implementação, 2 encontros 1:1 comigo</p>
+          <p class="preco-val">R$ 600</p>
+        </div>
+        <div class="preco-total-line">
+          <p class="preco-total-label">Total seria cerca de</p>
+          <p class="preco-total-val">R$ 1.297,00</p>
+        </div>
+      </div>
+      <div class="preco-destaque">
+        <p class="preco-destaque-label">Seu acesso completo</p>
+        <p class="preco-destaque-desc">
+          Com acesso completo ao protocolo,<br>
+          com aulas, Agentes de IA, encontro ao vivo, mapa mental e possibilidade de 1:1,
+        </p>
+        <p style="font-family:var(--ff-sans); font-size:14px; color:rgba(245,243,238,.45); margin-bottom:12px;">Você vai pagar:</p>
+        <p class="preco-valor"><span>R$</span> 147</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA 3 ──────────────────────────────────────── -->
+  <section id="cta3">
+    <div class="container">
+      <div class="btn-cta-wrap" style="margin-top:0;">
+        <a href="#" class="btn-cta" style="background:var(--black);">Quero parar de me sabotar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── GARANTIA ─────────────────────────────────── -->
+  <section id="garantia">
+    <div class="container">
+      <div class="gar-icon">
+        <svg viewBox="0 0 28 28" fill="none" stroke="#F5F3EE" stroke-width="1.5">
+          <path d="M14 3l9 4v7c0 5.5-4 10-9 12C5 24 1 19.5 1 14V7l9-4z"/>
+          <path d="M9 14l3 3 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="gar-title">Garantia de 7 dias</h2>
+      <p class="gar-desc">
+        Você tem 7 dias pra entrar, assistir às primeiras aulas,
+        conhecer os Agentes de IA e ver se a abordagem faz sentido pra você.<br><br>
+        Se, nesse período, você sentir que não é o tipo de processo
+        que você quer seguir agora, é só pedir reembolso na plataforma
+        e o seu dinheiro volta.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>Reset da Autossabotagem &mdash; Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
