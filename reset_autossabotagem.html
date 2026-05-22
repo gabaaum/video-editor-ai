@@ -74,18 +74,19 @@
       background: var(--black);
       overflow: hidden;
       position: relative;
-      height: clamp(560px, 78vh, 860px);
+      padding: clamp(60px, 8vh, 100px) 0 clamp(48px, 7vh, 88px);
     }
     .hero-inner {
-      max-width: 1200px;
+      max-width: 760px;
       margin-inline: auto;
-      height: 100%;
+      padding-inline: 24px;
       display: flex;
+      flex-direction: column;
       align-items: center;
+      text-align: center;
     }
     .hero-content {
-      padding-inline: clamp(28px, 6vw, 90px);
-      max-width: 580px;
+      width: 100%;
       position: relative;
       z-index: 2;
     }
@@ -117,39 +118,30 @@
       color: rgba(245,243,238,.62);
       line-height: 1.85;
       margin-top: 8px;
-      max-width: 440px;
+      max-width: 520px;
+      margin-inline: auto;
     }
-    .hero-cta-wrap { margin-top: 36px; }
-    .hero-photo-col {
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 44%;
+    .hero-cta-wrap { margin-top: 36px; text-align: center; }
+
+    /* ── VIDEO VSL ── */
+    .hero-video-wrap {
+      width: 100%;
+      margin-top: 48px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 24px 72px rgba(0,0,0,.55);
+      background: #000;
     }
-    .hero-photo {
+    .hero-video {
       display: block;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top center;
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 28%);
-      mask-image: linear-gradient(to right, transparent 0%, black 28%);
+      aspect-ratio: 16 / 9;
+      background: #000;
     }
+
     @media (max-width: 860px) {
-      #hero { height: auto; }
-      .hero-inner { flex-direction: column; align-items: stretch; }
-      .hero-photo-col {
-        position: relative;
-        width: 100%;
-        height: 340px;
-        right: auto; top: auto; bottom: auto;
-      }
-      .hero-photo {
-        -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-        mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-      }
-      .hero-content { padding: 52px 24px 28px; max-width: 100%; }
+      .hero-inner { padding-inline: 16px; }
+      .hero-video-wrap { margin-top: 36px; border-radius: 4px; }
     }
 
     /* ── SEÇÃO PRODUTO ── */
@@ -684,7 +676,7 @@
           Você não é preguiçoso(a).<br>
           <em>Seu cérebro só está obedecendo<br>uma memória antiga.</em>
         </h1>
-        <div class="divider" style="background:var(--beige); opacity:.4; margin-left:0;"></div>
+        <div class="divider" style="background:var(--beige); opacity:.4;"></div>
         <p class="hero-sub">
           O Reset da Autossabotagem é um protocolo online em 3 etapas,
           baseado em neurociência, que vai atualizar a memória emocional
@@ -694,8 +686,12 @@
           <a href="#cta3" class="btn-cta">Quero parar de me sabotar</a>
         </div>
       </div>
-      <div class="hero-photo-col">
-        <img class="hero-photo" src="marcos.png" alt="Marcos">
+      <div class="hero-video-wrap">
+        <video class="hero-video" controls preload="metadata">
+          <source src="vsl8m.mov" type="video/quicktime">
+          <source src="vsl8m.mp4" type="video/mp4">
+          Seu navegador não suporta reprodução de vídeo.
+        </video>
       </div>
     </div>
   </section>
