@@ -74,17 +74,18 @@
       background: var(--black);
       overflow: hidden;
       position: relative;
-      height: clamp(560px, 78vh, 860px);
+      min-height: clamp(560px, 78vh, 860px);
     }
     .hero-inner {
       max-width: 1200px;
       margin-inline: auto;
-      height: 100%;
+      min-height: clamp(560px, 78vh, 860px);
       display: flex;
       align-items: center;
     }
     .hero-content {
       padding-inline: clamp(28px, 6vw, 90px);
+      padding-block: clamp(40px, 5vh, 72px);
       max-width: 580px;
       position: relative;
       z-index: 2;
@@ -119,7 +120,21 @@
       margin-top: 8px;
       max-width: 440px;
     }
-    .hero-cta-wrap { margin-top: 36px; }
+    .hero-video-mini-wrap {
+      margin-top: 24px;
+      max-width: 400px;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,.6);
+      background: #000;
+    }
+    .hero-video-mini {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .hero-cta-wrap { margin-top: 28px; }
     .hero-photo-col {
       position: absolute;
       right: 0;
@@ -137,8 +152,8 @@
       mask-image: linear-gradient(to right, transparent 0%, black 28%);
     }
     @media (max-width: 860px) {
-      #hero { height: auto; }
-      .hero-inner { flex-direction: column; align-items: stretch; }
+      #hero { min-height: auto; }
+      .hero-inner { min-height: auto; flex-direction: column; align-items: stretch; }
       .hero-photo-col {
         position: relative;
         width: 100%;
@@ -150,6 +165,7 @@
         mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
       }
       .hero-content { padding: 52px 24px 28px; max-width: 100%; }
+      .hero-video-mini-wrap { max-width: 100%; }
     }
 
     /* ── SEÇÃO VSL ── */
@@ -728,25 +744,17 @@
           baseado em neurociência, que vai atualizar a memória emocional
           que faz você travar justamente quando decide mudar de vida.
         </p>
+        <div class="hero-video-mini-wrap">
+          <video class="hero-video-mini" controls preload="metadata">
+            <source src="vsl8m.mp4" type="video/mp4">
+          </video>
+        </div>
         <div class="hero-cta-wrap">
           <a href="#cta3" class="btn-cta">Quero parar de me sabotar</a>
         </div>
       </div>
       <div class="hero-photo-col">
         <img class="hero-photo" src="marcos.png" alt="Marcos">
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── VSL ──────────────────────────────────────── -->
-  <section id="vsl">
-    <div class="vsl-inner">
-      <p class="vsl-label">Assista antes de decidir</p>
-      <div class="vsl-video-wrap">
-        <video class="vsl-video" controls preload="metadata">
-          <source src="vsl8m.mp4" type="video/mp4">
-          Seu navegador não suporta reprodução de vídeo.
-        </video>
       </div>
     </div>
   </section>
